@@ -1,0 +1,19 @@
+[package]
+name = "taskchampion_python"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.maturin]
+name = "taskchampion"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "taskchampion"
+crate-type = ["cdylib"]
+doc = false
+[dependencies]
+chrono.workspace = true
+pyo3 = { version = "0.22.0", features = ["anyhow"] }
+
+taskchampion = { path = "../taskchampion", version = "0.7.0" }
+anyhow = "*"
