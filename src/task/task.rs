@@ -1,6 +1,6 @@
 use crate::task::{Annotation, Status, Tag, TaskData};
 use crate::Operation;
-use chrono::DateTime;
+use chrono::{DateTime, Utc};
 use pyo3::prelude::*;
 use taskchampion::{Operation as TCOperation, Task as TCTask, Uuid};
 // TODO: actually create a front-facing user class, instead of this data blob
@@ -39,8 +39,8 @@ impl Task {
     ///     str: RFC3339 timestamp
     ///     None: No timestamp
     // Attempt to convert this into a python datetime later on
-    pub fn get_entry(&self) -> Option<String> {
-        self.0.get_entry().map(|timestamp| timestamp.to_rfc3339())
+    pub fn get_entry(&self) -> Option<DateTime<Utc>> {
+        self.0.get_entry()
     }
 
     /// Get the task's priority
@@ -56,8 +56,8 @@ impl Task {
     /// Returns:
     ///     str: RFC3339 timestamp
     ///     None: No timesamp
-    pub fn get_wait(&self) -> Option<String> {
-        self.0.get_wait().map(|timestamp| timestamp.to_rfc3339())
+    pub fn get_wait(&self) -> Option<DateTime<Utc>> {
+        self.0.get_wait()
     }
     /// Check if the task is waiting
     ///
@@ -144,10 +144,8 @@ impl Task {
     /// Returns:
     ///     str: RFC3339 modified time
     ///     None: Not applicable
-    pub fn get_modified(&self) -> Option<String> {
-        self.0
-            .get_modified()
-            .map(|timestamp| timestamp.to_rfc3339())
+    pub fn get_modified(&self) -> Option<DateTime<Utc>> {
+        self.0.get_modified()
     }
 
     /// Get the task's due date
@@ -155,8 +153,8 @@ impl Task {
     /// Returns:
     ///     str: RFC3339 due date
     ///     None: No such value
-    pub fn get_due(&self) -> Option<String> {
-        self.0.get_due().map(|timestamp| timestamp.to_rfc3339())
+    pub fn get_due(&self) -> Option<DateTime<Utc>> {
+        self.0.get_due()
     }
     /// Get a list of tasks dependencies
     ///
@@ -311,28 +309,19 @@ impl Task {
         Ok(ops.get(0).map(|op| Operation(op.clone())).unwrap())
     }
 
-    pub fn remove_annotation(&mut self, timestamp: String) -> anyhow::Result<Operation> {
+    pub fn remove_annotation(&mut self, timestamp: DateTime<Utc>) -> anyhow::Result<Operation> {
         let mut ops: Vec<TCOperation> = Vec::new();
 
-        let time = DateTime::parse_from_rfc3339(&timestamp)
-            .unwrap()
-            .with_timezone(&chrono::Utc);
-        self.0.remove_annotation(time, &mut ops).expect("");
+        self.0.remove_annotation(timestamp, &mut ops).expect("");
 
         Ok(ops.get(0).map(|op| Operation(op.clone())).unwrap())
     }
 
     #[pyo3(signature=(due=None))]
-    pub fn set_due(&mut self, due: Option<String>) -> anyhow::Result<Operation> {
+    pub fn set_due(&mut self, due: Option<DateTime<Utc>>) -> anyhow::Result<Operation> {
         let mut ops: Vec<TCOperation> = Vec::new();
 
-        let timestamp = due.map(|s| {
-            DateTime::parse_from_rfc3339(s.as_ref())
-                .unwrap()
-                .with_timezone(&chrono::Utc)
-        });
-
-        self.0.set_due(timestamp, &mut ops).expect("");
+        self.0.set_due(due, &mut ops).expect("");
 
         Ok(ops.get(0).map(|op| Operation(op.clone())).unwrap())
     }

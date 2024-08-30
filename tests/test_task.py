@@ -1,4 +1,5 @@
 from taskchampion import Task, Replica, Status, Tag
+from datetime import datetime
 import pytest
 import uuid
 
@@ -58,11 +59,9 @@ def blocked_task(tmp_path):
 @pytest.fixture
 def due_task(tmp_path):
     r = Replica(str(tmp_path), True)
-    result = r.create_task(str(uuid.uuid4()))
-    assert result is not None
-    task, _ = result
+    task, _ = r.create_task(str(uuid.uuid4()))
 
-    task.set_due("2006-05-13T01:27:27+00:00")
+    task.set_due(datetime.fromisoformat("2006-05-13T01:27:27+00:00"))
     # Need to refresh the tag, the one that's in memory is stale
 
     return task
@@ -91,8 +90,9 @@ def test_get_priority(waiting_task: Task):
 
 
 def test_get_wait(waiting_task: Task):
-    wait = waiting_task.get_wait()
-    assert wait == "2038-01-19T03:14:07+00:00"
+    assert waiting_task.get_wait() == datetime.fromisoformat(
+        "2038-01-19T03:14:07+00:00"
+    )
 
 
 def test_is_waiting(waiting_task: Task):
@@ -128,4 +128,4 @@ def test_get_modified(waiting_task: Task):
 
 
 def test_get_due(due_task: Task):
-    assert due_task.get_due() == "2006-05-13T01:27:27+00:00"
+    assert due_task.get_due() == datetime.fromisoformat("2006-05-13T01:27:27+00:00")
