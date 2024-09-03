@@ -38,16 +38,13 @@ impl Replica {
     /// Create a new task
     /// The task must not already exist.
 
-    pub fn create_task(&mut self, uuid: String) -> anyhow::Result<(Task, Operation)> {
+    pub fn create_task(&mut self, uuid: String) -> anyhow::Result<(Task, Vec<Operation>)> {
         let mut ops = TCOperations::new();
         let task = self
             .0
             .create_task(Uuid::parse_str(&uuid)?, &mut ops)
             .map(|t| Task(t))?;
-        Ok((
-            task,
-            Operation(ops.get(0).expect("Missing Operation").clone()),
-        ))
+        Ok((task, ops.iter().map(|op| Operation(op.clone())).collect()))
     }
 
     /// Get a list of all tasks in the replica.

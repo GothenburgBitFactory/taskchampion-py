@@ -16,13 +16,13 @@ def empty_replica(tmp_path: Path) -> Replica:
 def replica_with_tasks(empty_replica: Replica):
     ops = []
     _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.append(op)
+    ops.extend(op)
 
     _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.append(op)
+    ops.extend(op)
 
     _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.append(op)
+    ops.extend(op)
 
     empty_replica.commit_operations(ops)
 
@@ -44,7 +44,7 @@ def test_create_task(empty_replica: Replica):
     u = uuid.uuid4()
 
     _, op = empty_replica.create_task(str(u))
-    empty_replica.commit_operations([op])
+    empty_replica.commit_operations(op)
 
     tasks = empty_replica.all_task_uuids()
 
@@ -54,13 +54,13 @@ def test_create_task(empty_replica: Replica):
 def test_all_task_uuids(empty_replica: Replica):
     ops = []
     _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.append(op)
+    ops.extend(op)
 
     _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.append(op)
+    ops.extend(op)
 
     _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.append(op)
+    ops.extend(op)
 
     empty_replica.commit_operations(ops)
     tasks = empty_replica.all_task_uuids()
@@ -70,13 +70,13 @@ def test_all_task_uuids(empty_replica: Replica):
 def test_all_tasks(empty_replica: Replica):
     ops = []
     _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.append(op)
+    ops.extend(op)
 
     _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.append(op)
+    ops.extend(op)
 
     _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.append(op)
+    ops.extend(op)
 
     empty_replica.commit_operations(ops)
 
@@ -122,7 +122,7 @@ def test_num_local_operations(replica_with_tasks: Replica):
 
     _, op = replica_with_tasks.create_task(str(uuid.uuid4()))
 
-    replica_with_tasks.commit_operations([op])
+    replica_with_tasks.commit_operations(op)
     assert replica_with_tasks.num_local_operations() == 4
 
 
@@ -131,7 +131,7 @@ def test_num_undo_points(replica_with_tasks: Replica):
 
     _, op = replica_with_tasks.create_task(str(uuid.uuid4()))
 
-    replica_with_tasks.commit_operations([op])
+    replica_with_tasks.commit_operations(op)
 
     assert replica_with_tasks.num_undo_points() == 4
 

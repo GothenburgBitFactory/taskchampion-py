@@ -10,14 +10,14 @@ def working_set(tmp_path: Path):
 
     ops = []
     task, op = r.create_task(str(uuid.uuid4()))
-    ops.append(op)
+    ops.extend(op)
     ops.extend(task.set_status(Status.Pending))
 
     task, op = r.create_task(str(uuid.uuid4()))
-    ops.append(op)
+    ops.extend(op)
     ops.extend(task.set_status(Status.Pending))
 
-    ops.append(task.start())
+    ops.extend(task.start())
     r.commit_operations(ops)
 
     return r.working_set()
