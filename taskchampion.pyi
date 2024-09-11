@@ -1,6 +1,6 @@
-from typing import Optional
 from datetime import datetime
 from enum import Enum
+from typing import Optional, Iterator
 
 
 class Replica:
@@ -110,6 +110,8 @@ class WorkingSet:
     def is_empty(self) -> bool: ...
     def by_index(self, index: int) -> Optional[str]: ...
     def by_uuid(self, uuid: str) -> Optional[int]: ...
+    def __iter__(self) -> Iterator[tuple[int, str]]: ...
+    def __next__(self) -> tuple[int, str]: ...
 
 
 class Annotation:

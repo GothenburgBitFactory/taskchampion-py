@@ -1,4 +1,4 @@
-from taskchampion import Replica, WorkingSet, Status, Operation
+from taskchampion import Replica, WorkingSet, Status
 from pathlib import Path
 import pytest
 import uuid
@@ -39,14 +39,14 @@ def test_by_index(working_set: WorkingSet):
     assert working_set.by_index(1) is not None
 
 
-@pytest.mark.skip()
 def test_iter(working_set: WorkingSet):
     assert iter(working_set)
 
 
-@pytest.mark.skip()
 def test_next(working_set: WorkingSet):
-    assert next(working_set)[0] == 1
-    assert next(working_set)[0] == 2
-    with pytest.raises(OSError):
-        next(working_set)
+    working_set_iterator = iter(working_set)
+
+    assert next(working_set_iterator)[0] == 1
+    assert next(working_set_iterator)[0] == 2
+    with pytest.raises(StopIteration):
+        next(working_set_iterator)

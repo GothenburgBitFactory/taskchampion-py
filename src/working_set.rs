@@ -5,6 +5,21 @@ use taskchampion::WorkingSet as TCWorkingSet;
 #[pyclass]
 pub struct WorkingSet(pub(crate) TCWorkingSet);
 
+#[pyclass]
+struct WorkingSetIter {
+    iter: std::vec::IntoIter<(usize, String)>,
+}
+
+#[pymethods]
+impl WorkingSetIter {
+    fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        slf
+    }
+
+    fn __next__(mut slf: PyRefMut<'_, Self>) -> Option<(usize, String)> {
+        slf.iter.next()
+    }
+}
 #[pymethods]
 impl WorkingSet {
     pub fn __len__(&self) -> usize {
@@ -28,9 +43,15 @@ impl WorkingSet {
         self.0.by_uuid(Uuid::parse_str(&uuid).unwrap())
     }
 
-    fn __iter__(_slf: PyRef<'_, Self>) -> PyResult<Py<WorkingSet>> {
-        todo!("Figure way to propertly implement iterator for python")
-        // Usability-wise we want it to hold the reference to the iterator, so that
-        // with each iteration the state persists.
+    fn __iter__(slf: PyRef<'_, Self>) -> PyResult<Py<WorkingSetIter>> {
+        let iter = slf
+            .0
+            .iter()
+            .map(|(i, id)| (i, id.to_string()))
+            .collect::<Vec<_>>()
+            .into_iter();
+        let iter = WorkingSetIter { iter };
+
+        Py::new(slf.py(), iter)
     }
 }
