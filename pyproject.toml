@@ -3,7 +3,7 @@ requires = ["maturin>=1.5,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "taskchampion"
+name = "taskchampion-py"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Rust",
@@ -16,7 +16,7 @@ dynamic = ["version"]
 features = ["pyo3/extension-module"]
 
 [tool.poetry]
-name = "taskchampion"
+name = "taskchampion-py"
 version = "0.1.0"
 authors = ["illyalaifu <illyalaifu@gmail.com>"]
 description = ""
