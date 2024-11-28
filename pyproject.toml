@@ -20,10 +20,11 @@ name = "taskchampion-py"
 version = "0.1.0"
 authors = ["illyalaifu <illyalaifu@gmail.com>"]
 description = ""
+package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.8"
-maturin = {extras = ["patchelf"], version = "^1.5.1"}
+maturin = { extras = ["patchelf"], version = "^1.5.1" }
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.2.0"

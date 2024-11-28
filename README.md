@@ -2,8 +2,32 @@
 
 This submodule contains bindings to the Taskchampion
 
-# TODO
+## Development
+
+This project is built using [maturin](https://github.com/PyO3/maturin).
+
+To install:
+
+```shell
+pipx install maturin
+```
+
+To build wheels:
+```shell
+maturin build
+```
+This stores wheels in the `target/wheels` folder by default.
+
+### Testing
+
+Extra testing dependencies are installed via `poetry`:
+```shell
+poetry install
+```
+
+
+
+## TODO
 
 - There is no good way to describe functions that accept interface (e.g. `Replica::new` accepts any of the storage implementations, but Python bindings lack such mechanisms), currently, `Replica::new` just constructs the SqliteStorage from the params passed into the constructor.
-- It is possible to convert `WorkingSet` into a python iterator (you can iterate over it via `for item in <blah>:` or `next(<blah>)`), but that needs a way to store the current state.
-- Possible integration with Github Workflows for deployment.
+- Possible integration with Github Workflows for deployment to PyPI
