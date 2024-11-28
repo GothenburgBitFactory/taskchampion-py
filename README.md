@@ -25,7 +25,17 @@ Extra testing dependencies are installed via `poetry`:
 poetry install
 ```
 
-
+To run tests:
+```shell
+poetry shell
+maturin develop
+pytest
+```
+or
+```shell
+poetry run maturin develop
+poetry run pytest
+```
 
 ## TODO
 
