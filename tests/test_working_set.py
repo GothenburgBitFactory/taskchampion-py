@@ -5,8 +5,8 @@ import uuid
 
 
 @pytest.fixture
-def working_set(tmp_path: Path):
-    r = Replica(str(tmp_path), True)
+def working_set():
+    r = Replica.new_in_memory()
 
     ops = []
     task, op = r.create_task(str(uuid.uuid4()))

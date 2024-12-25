@@ -8,6 +8,17 @@ It follows the TaskChampion API closely, with minimal adaptation for Python.
 The `taskchampion-py` package version matches the Rust crate's version.
 When an additional package release is required for the same Rust crate, a fourth version component is used; for example `1.2.0.1` for the second release of `taskchampion-py` containing TaskChampion version `1.2.0`.
 
+## Usage
+
+```py
+from taskchampion import Replica
+
+# Set up a replica.
+r = Replica.new_on_disk("/some/path", true)
+
+# (more TBD)
+```
+
 ## Development
 
 This project is built using [maturin](https://github.com/PyO3/maturin).
@@ -45,5 +56,4 @@ poetry run pytest
 
 ## TODO
 
-- There is no good way to describe functions that accept interface (e.g. `Replica::new` accepts any of the storage implementations, but Python bindings lack such mechanisms), currently, `Replica::new` just constructs the SqliteStorage from the params passed into the constructor.
 - Possible integration with Github Workflows for deployment to PyPI
