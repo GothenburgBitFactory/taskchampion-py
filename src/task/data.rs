@@ -14,7 +14,7 @@ impl TaskData {
         let mut ops: Vec<TCOperation> = vec![TCOperation::Create { uuid: u }];
 
         let td = TaskData(TCTaskData::create(u, &mut ops));
-        (td, Operation(ops.get(0).expect("").clone()))
+        (td, Operation(ops.first().expect("").clone()))
     }
 
     pub fn get_uuid(&self) -> String {
@@ -34,13 +34,13 @@ impl TaskData {
         let mut ops: Vec<TCOperation> = Vec::new();
 
         self.0.update(property, value, &mut ops);
-        ops.get(0).map(|op| Operation(op.clone())).expect("")
+        ops.first().map(|op| Operation(op.clone())).expect("")
     }
 
     pub fn delete(&mut self) -> Operation {
         let mut ops: Vec<TCOperation> = Vec::new();
         self.0.delete(&mut ops);
 
-        ops.get(0).map(|op| Operation(op.clone())).expect("")
+        ops.first().map(|op| Operation(op.clone())).expect("")
     }
 }
