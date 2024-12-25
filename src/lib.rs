@@ -1,3 +1,5 @@
+#![allow(clippy::new_without_default)]
+
 use pyo3::prelude::*;
 pub mod replica;
 use replica::*;

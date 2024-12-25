@@ -11,6 +11,7 @@ unsafe impl Send for Task {}
 
 #[pymethods]
 impl Task {
+    #[allow(clippy::wrong_self_convention)]
     pub fn into_task_data(&self) -> TaskData {
         TaskData(self.0.clone().into_task_data())
     }
@@ -103,18 +104,14 @@ impl Task {
     /// Returns:
     ///     list[str]: list of tags
     pub fn get_tags(&self) -> Vec<Tag> {
-        self.0.get_tags().into_iter().map(|v| Tag(v)).collect()
+        self.0.get_tags().map(Tag).collect()
     }
     /// Get task annotations
     ///
     /// Returns:
     ///     list[Annotation]: list of task annotations
     pub fn get_annotations(&self) -> Vec<Annotation> {
-        self.0
-            .get_annotations()
-            .into_iter()
-            .map(|annotation| Annotation(annotation))
-            .collect()
+        self.0.get_annotations().map(Annotation).collect()
     }
 
     /// Get a task UDA
@@ -163,7 +160,6 @@ impl Task {
     pub fn get_dependencies(&self) -> Vec<String> {
         self.0
             .get_dependencies()
-            .into_iter()
             .map(|uuid| uuid.to_string())
             .collect()
     }

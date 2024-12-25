@@ -37,13 +37,12 @@ impl Replica {
     }
     /// Create a new task
     /// The task must not already exist.
-
     pub fn create_task(&mut self, uuid: String) -> anyhow::Result<(Task, Vec<Operation>)> {
         let mut ops = TCOperations::new();
         let task = self
             .0
             .create_task(Uuid::parse_str(&uuid)?, &mut ops)
-            .map(|t| Task(t))?;
+            .map(Task)?;
         Ok((task, ops.iter().map(|op| Operation(op.clone())).collect()))
     }
 
@@ -74,7 +73,7 @@ impl Replica {
     }
 
     pub fn working_set(&mut self) -> anyhow::Result<WorkingSet> {
-        Ok(self.0.working_set().map(|ws| WorkingSet(ws))?)
+        Ok(self.0.working_set().map(WorkingSet)?)
     }
 
     pub fn dependency_map(&mut self, force: bool) -> anyhow::Result<DependencyMap> {
@@ -86,7 +85,7 @@ impl Replica {
                 // TODO: better error handling here
                 Rc::into_inner(rc).unwrap()
             })
-            .map(|dm| DependencyMap(dm))?;
+            .map(DependencyMap)?;
 
         Ok(s)
     }
@@ -95,14 +94,14 @@ impl Replica {
         Ok(self
             .0
             .get_task(Uuid::parse_str(&uuid).unwrap())
-            .map(|opt| opt.map(|t| Task(t)))?)
+            .map(|opt| opt.map(Task))?)
     }
 
     pub fn get_task_data(&mut self, uuid: String) -> anyhow::Result<Option<TaskData>> {
         Ok(self
             .0
             .get_task_data(Uuid::parse_str(&uuid)?)
-            .map(|opt| opt.map(|td| TaskData(td)))?)
+            .map(|opt| opt.map(TaskData))?)
     }
 
     pub fn sync(&self, _avoid_snapshots: bool) {
