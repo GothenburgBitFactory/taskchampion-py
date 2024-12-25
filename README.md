@@ -1,6 +1,12 @@
 # Python Taskchampion Bindings
 
-This submodule contains bindings to the Taskchampion
+This package contains Python bindings for [TaskChampion](https://github.com/GothenburgBitFactory/taskchampion).
+It follows the TaskChampion API closely, with minimal adaptation for Python.
+
+## Versioning
+
+The `taskchampion-py` package version matches the Rust crate's version.
+When an additional package release is required for the same Rust crate, a fourth version component is used; for example `1.2.0.1` for the second release of `taskchampion-py` containing TaskChampion version `1.2.0`.
 
 ## Development
 
