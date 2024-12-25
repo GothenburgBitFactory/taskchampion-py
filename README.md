@@ -2,6 +2,17 @@
 
 This submodule contains bindings to the Taskchampion
 
+## Usage
+
+```py
+from taskchampion import Replica
+
+# Set up a replica.
+r = Replica.new_on_disk("/some/path", true)
+
+# (more TBD)
+```
+
 ## Development
 
 This project is built using [maturin](https://github.com/PyO3/maturin).
@@ -39,5 +50,4 @@ poetry run pytest
 
 ## TODO
 
-- There is no good way to describe functions that accept interface (e.g. `Replica::new` accepts any of the storage implementations, but Python bindings lack such mechanisms), currently, `Replica::new` just constructs the SqliteStorage from the params passed into the constructor.
 - Possible integration with Github Workflows for deployment to PyPI

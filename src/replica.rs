@@ -4,8 +4,7 @@ use std::rc::Rc;
 use crate::task::TaskData;
 use crate::{DependencyMap, Operation, Task, WorkingSet};
 use pyo3::prelude::*;
-use taskchampion::storage::{InMemoryStorage, SqliteStorage};
-use taskchampion::{Operations as TCOperations, Replica as TCReplica, Uuid};
+use taskchampion::{Operations as TCOperations, Replica as TCReplica, StorageConfig, Uuid};
 
 #[pyclass]
 /// A replica represents an instance of a user's task data, providing an easy interface
@@ -15,29 +14,33 @@ pub struct Replica(TCReplica);
 unsafe impl Send for Replica {}
 #[pymethods]
 impl Replica {
-    #[new]
-    /// Instantiates the Replica
+    #[staticmethod]
+    /// Create a Replica with on-disk storage.
     ///
     /// Args:
     ///     path (str): path to the directory with the database
     ///     create_if_missing (bool): create the database if it does not exist
     /// Raises:
     ///     RuntimeError: if database does not exist, and create_if_missing is false
-    pub fn new(path: String, create_if_missing: bool) -> anyhow::Result<Replica> {
-        let storage = SqliteStorage::new(path, create_if_missing)?;
-
-        Ok(Replica(TCReplica::new(Box::new(storage))))
+    pub fn new_on_disk(path: String, create_if_missing: bool) -> anyhow::Result<Replica> {
+        Ok(Replica(TCReplica::new(
+            StorageConfig::OnDisk {
+                taskdb_dir: path.into(),
+                create_if_missing,
+            }
+            .into_storage()?,
+        )))
     }
 
     #[staticmethod]
-    pub fn new_inmemory() -> Self {
-        let storage = InMemoryStorage::new();
-
-        Replica(TCReplica::new(Box::new(storage)))
+    pub fn new_in_memory() -> anyhow::Result<Self> {
+        Ok(Replica(TCReplica::new(
+            StorageConfig::InMemory.into_storage()?,
+        )))
     }
+
     /// Create a new task
     /// The task must not already exist.
-
     pub fn create_task(&mut self, uuid: String) -> anyhow::Result<(Task, Vec<Operation>)> {
         let mut ops = TCOperations::new();
         let task = self

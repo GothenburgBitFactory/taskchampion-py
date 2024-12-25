@@ -4,12 +4,9 @@ from pathlib import Path
 import pytest
 from taskchampion import Replica
 
-# TODO: instantiate the in-memory replica, this will do for now
-
-
 @pytest.fixture
-def empty_replica(tmp_path: Path) -> Replica:
-    return Replica(str(tmp_path), True)
+def empty_replica() -> Replica:
+    return Replica.new_in_memory()
 
 
 @pytest.fixture
@@ -30,14 +27,14 @@ def replica_with_tasks(empty_replica: Replica):
 
 
 def test_constructor(tmp_path: Path):
-    r = Replica(str(tmp_path), True)
+    r = Replica.new_on_disk(str(tmp_path), True)
 
     assert r is not None
 
 
 def test_constructor_throws_error_with_missing_database(tmp_path: Path):
     with pytest.raises(RuntimeError):
-        Replica(str(tmp_path), False)
+        Replica.new_on_disk(str(tmp_path), False)
 
 
 def test_create_task(empty_replica: Replica):

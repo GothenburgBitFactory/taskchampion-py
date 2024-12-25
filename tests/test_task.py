@@ -5,8 +5,8 @@ import uuid
 
 
 @pytest.fixture
-def new_task(tmp_path):
-    r = Replica(str(tmp_path), True)
+def new_task():
+    r = Replica.new_in_memory()
     result = r.create_task(str(uuid.uuid4()))
 
     assert result is not None
@@ -16,8 +16,8 @@ def new_task(tmp_path):
 
 
 @pytest.fixture
-def waiting_task(tmp_path):
-    r = Replica(str(tmp_path), True)
+def waiting_task():
+    r = Replica.new_in_memory()
     result = r.create_task(str(uuid.uuid4()))
 
     assert result is not None
@@ -31,8 +31,8 @@ def waiting_task(tmp_path):
 
 
 @pytest.fixture
-def started_task(tmp_path):
-    r = Replica(str(tmp_path), True)
+def started_task():
+    r = Replica.new_in_memory()
 
     result = r.create_task(str(uuid.uuid4()))
     assert result is not None
@@ -43,8 +43,8 @@ def started_task(tmp_path):
 
 
 @pytest.fixture
-def blocked_task(tmp_path):
-    r = Replica(str(tmp_path), True)
+def blocked_task():
+    r = Replica.new_in_memory()
     result = r.create_task(str(uuid.uuid4()))
 
     assert result is not None
@@ -57,8 +57,8 @@ def blocked_task(tmp_path):
 
 
 @pytest.fixture
-def due_task(tmp_path):
-    r = Replica(str(tmp_path), True)
+def due_task():
+    r = Replica.new_in_memory()
     task, _ = r.create_task(str(uuid.uuid4()))
 
     task.set_due(datetime.fromisoformat("2006-05-13T01:27:27+00:00"))
