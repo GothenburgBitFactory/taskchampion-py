@@ -1,11 +1,12 @@
 [package]
-name = "taskchampion_python"
-version = "0.1.0"
+name = "taskchampion-py"
+version = "0.7.0-pre1"
 edition = "2021"
+# This should match the MSRV of the `taskchampion` crate.
+rust-version = "1.78.0"
 
 [package.metadata.maturin]
 name = "taskchampion"
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 name = "taskchampion"
