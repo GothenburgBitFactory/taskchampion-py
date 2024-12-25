@@ -28,8 +28,9 @@ jobs:
             target: x86_64
           - runner: ubuntu-22.04
             target: x86
-          - runner: ubuntu-22.04
-            target: aarch64
+# This architecture fails with "ARM assembler must define __ARM_ARCH"
+#         - runner: ubuntu-22.04
+#           target: aarch64
           - runner: ubuntu-22.04
             target: armv7
           - runner: ubuntu-22.04
@@ -45,7 +46,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter
+          args: --release --out dist -i python3.9
           sccache: 'true'
           manylinux: auto
       - name: Upload wheels
