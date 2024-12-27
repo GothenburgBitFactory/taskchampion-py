@@ -2,7 +2,7 @@ import uuid
 from pathlib import Path
 
 import pytest
-from taskchampion import Replica
+from taskchampion import Replica, Operations
 
 @pytest.fixture
 def empty_replica() -> Replica:
@@ -11,16 +11,10 @@ def empty_replica() -> Replica:
 
 @pytest.fixture
 def replica_with_tasks(empty_replica: Replica):
-    ops = []
-    _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.extend(op)
-
-    _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.extend(op)
-
-    _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.extend(op)
-
+    ops = Operations()
+    _ = empty_replica.create_task(str(uuid.uuid4()), ops)
+    _ = empty_replica.create_task(str(uuid.uuid4()), ops)
+    _ = empty_replica.create_task(str(uuid.uuid4()), ops)
     empty_replica.commit_operations(ops)
 
     return empty_replica
@@ -40,8 +34,9 @@ def test_constructor_throws_error_with_missing_database(tmp_path: Path):
 def test_create_task(empty_replica: Replica):
     u = uuid.uuid4()
 
-    _, op = empty_replica.create_task(str(u))
-    empty_replica.commit_operations(op)
+    ops = Operations()
+    _ = empty_replica.create_task(str(u), ops)
+    empty_replica.commit_operations(ops)
 
     tasks = empty_replica.all_task_uuids()
 
@@ -49,32 +44,20 @@ def test_create_task(empty_replica: Replica):
 
 
 def test_all_task_uuids(empty_replica: Replica):
-    ops = []
-    _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.extend(op)
-
-    _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.extend(op)
-
-    _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.extend(op)
-
+    ops = Operations()
+    _ = empty_replica.create_task(str(uuid.uuid4()), ops)
+    _ = empty_replica.create_task(str(uuid.uuid4()), ops)
+    _ = empty_replica.create_task(str(uuid.uuid4()), ops)
     empty_replica.commit_operations(ops)
     tasks = empty_replica.all_task_uuids()
     assert len(tasks) == 3
 
 
 def test_all_tasks(empty_replica: Replica):
-    ops = []
-    _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.extend(op)
-
-    _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.extend(op)
-
-    _, op = empty_replica.create_task(str(uuid.uuid4()))
-    ops.extend(op)
-
+    ops = Operations()
+    _ = empty_replica.create_task(str(uuid.uuid4()), ops)
+    _ = empty_replica.create_task(str(uuid.uuid4()), ops)
+    _ = empty_replica.create_task(str(uuid.uuid4()), ops)
     empty_replica.commit_operations(ops)
 
     tasks = empty_replica.all_tasks()
@@ -117,18 +100,19 @@ def test_add_undo_point(replica_with_tasks: Replica):
 def test_num_local_operations(replica_with_tasks: Replica):
     assert replica_with_tasks.num_local_operations() == 3
 
-    _, op = replica_with_tasks.create_task(str(uuid.uuid4()))
+    ops = Operations()
+    _ = replica_with_tasks.create_task(str(uuid.uuid4()), ops)
+    replica_with_tasks.commit_operations(ops)
 
-    replica_with_tasks.commit_operations(op)
     assert replica_with_tasks.num_local_operations() == 4
 
 
 def test_num_undo_points(replica_with_tasks: Replica):
     assert replica_with_tasks.num_undo_points() == 3
 
-    _, op = replica_with_tasks.create_task(str(uuid.uuid4()))
-
-    replica_with_tasks.commit_operations(op)
+    ops = Operations()
+    _ = replica_with_tasks.create_task(str(uuid.uuid4()), ops)
+    replica_with_tasks.commit_operations(ops)
 
     assert replica_with_tasks.num_undo_points() == 4
 

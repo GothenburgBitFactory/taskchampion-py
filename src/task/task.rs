@@ -1,13 +1,21 @@
 use crate::task::{Annotation, Status, Tag, TaskData};
-use crate::Operation;
+use crate::Operations;
 use chrono::{DateTime, Utc};
 use pyo3::prelude::*;
-use taskchampion::{Operation as TCOperation, Task as TCTask, Uuid};
+use taskchampion::{Task as TCTask, Uuid};
+
 // TODO: actually create a front-facing user class, instead of this data blob
 #[pyclass]
 pub struct Task(pub(crate) TCTask);
 
 unsafe impl Send for Task {}
+
+impl Task {
+    fn to_datetime(s: Option<String>) -> anyhow::Result<Option<DateTime<Utc>>> {
+        s.map(|time| Ok(DateTime::parse_from_rfc3339(&time)?.with_timezone(&chrono::Utc)))
+            .transpose()
+    }
+}
 
 #[pymethods]
 impl Task {
@@ -136,6 +144,7 @@ impl Task {
     pub fn get_udas(&self) -> Vec<((&str, &str), &str)> {
         self.0.get_udas().collect()
     }
+
     /// Get the task modified time
     ///
     /// Returns:
@@ -153,6 +162,7 @@ impl Task {
     pub fn get_due(&self) -> Option<DateTime<Utc>> {
         self.0.get_due()
     }
+
     /// Get a list of tasks dependencies
     ///
     /// Returns:
@@ -163,6 +173,7 @@ impl Task {
             .map(|uuid| uuid.to_string())
             .collect()
     }
+
     /// Get the task's property value
     ///
     /// Returns:
@@ -172,157 +183,94 @@ impl Task {
         self.0.get_value(property)
     }
 
-    pub fn set_status(&mut self, status: Status) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.set_status(status.into(), &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn set_status(&mut self, status: Status, ops: &mut Operations) -> anyhow::Result<()> {
+        Ok(self.0.set_status(status.into(), ops.as_mut())?)
     }
 
-    pub fn set_description(&mut self, description: String) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.set_description(description, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn set_description(
+        &mut self,
+        description: String,
+        ops: &mut Operations,
+    ) -> anyhow::Result<()> {
+        Ok(self.0.set_description(description, ops.as_mut())?)
     }
 
-    pub fn set_priority(&mut self, priority: String) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.set_priority(priority, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn set_priority(&mut self, priority: String, ops: &mut Operations) -> anyhow::Result<()> {
+        Ok(self.0.set_priority(priority, ops.as_mut())?)
     }
 
-    #[pyo3(signature=(entry=None))]
-    pub fn set_entry(&mut self, entry: Option<String>) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        let timestamp = entry.map(|time| {
-            DateTime::parse_from_rfc3339(&time)
-                .unwrap()
-                .with_timezone(&chrono::Utc)
-        });
-
-        self.0.set_entry(timestamp, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    #[pyo3(signature=(entry, ops))]
+    pub fn set_entry(&mut self, entry: Option<String>, ops: &mut Operations) -> anyhow::Result<()> {
+        let timestamp = Self::to_datetime(entry)?;
+        Ok(self.0.set_entry(timestamp, ops.as_mut())?)
     }
 
-    #[pyo3(signature=(wait=None))]
-    pub fn set_wait(&mut self, wait: Option<String>) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        let timestamp = wait.map(|time| {
-            DateTime::parse_from_rfc3339(&time)
-                .unwrap()
-                .with_timezone(&chrono::Utc)
-        });
-
-        self.0.set_wait(timestamp, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    #[pyo3(signature=(wait, ops))]
+    pub fn set_wait(&mut self, wait: Option<String>, ops: &mut Operations) -> anyhow::Result<()> {
+        let timestamp = Self::to_datetime(wait)?;
+        Ok(self.0.set_wait(timestamp, ops.as_mut())?)
     }
 
-    #[pyo3(signature=(modified=None))]
-    pub fn set_modified(&mut self, modified: Option<String>) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        let timestamp = modified.map(|time| {
-            DateTime::parse_from_rfc3339(&time)
-                .unwrap()
-                .with_timezone(&chrono::Utc)
-        });
-
-        self.0.set_wait(timestamp, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    #[pyo3(signature=(modified, ops))]
+    pub fn set_modified(&mut self, modified: String, ops: &mut Operations) -> anyhow::Result<()> {
+        let timestamp = DateTime::parse_from_rfc3339(&modified)?.with_timezone(&chrono::Utc);
+        Ok(self.0.set_modified(timestamp, ops.as_mut())?)
     }
 
-    #[pyo3(signature=(property, value=None))]
+    #[pyo3(signature=(property, value, ops))]
     pub fn set_value(
         &mut self,
         property: String,
         value: Option<String>,
-    ) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-        self.0.set_value(property, value, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+        ops: &mut Operations,
+    ) -> anyhow::Result<()> {
+        Ok(self.0.set_value(property, value, ops.as_mut())?)
     }
 
-    pub fn start(&mut self) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.start(&mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn start(&mut self, ops: &mut Operations) -> anyhow::Result<()> {
+        Ok(self.0.start(ops.as_mut())?)
     }
 
-    pub fn stop(&mut self) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.stop(&mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn stop(&mut self, ops: &mut Operations) -> anyhow::Result<()> {
+        Ok(self.0.stop(ops.as_mut())?)
     }
 
-    pub fn done(&mut self) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.done(&mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn done(&mut self, ops: &mut Operations) -> anyhow::Result<()> {
+        Ok(self.0.done(ops.as_mut())?)
     }
 
-    pub fn add_tag(&mut self, tag: &Tag) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.add_tag(&tag.0, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn add_tag(&mut self, tag: &Tag, ops: &mut Operations) -> anyhow::Result<()> {
+        Ok(self.0.add_tag(&tag.0, ops.as_mut())?)
     }
 
-    pub fn remove_tag(&mut self, tag: &Tag) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.remove_tag(&tag.0, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn remove_tag(&mut self, tag: &Tag, ops: &mut Operations) -> anyhow::Result<()> {
+        Ok(self.0.remove_tag(&tag.0, ops.as_mut())?)
     }
 
-    pub fn add_annotation(&mut self, ann: &Annotation) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
+    pub fn add_annotation(&mut self, ann: &Annotation, ops: &mut Operations) -> anyhow::Result<()> {
+        // Create an owned annotation
         let mut annotation = Annotation::new();
-
         annotation.set_entry(ann.entry());
         annotation.set_description(ann.description());
 
-        self.0.add_annotation(annotation.0, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+        Ok(self.0.add_annotation(annotation.0, ops.as_mut())?)
     }
 
     pub fn remove_annotation(
         &mut self,
         timestamp: DateTime<Utc>,
-    ) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.remove_annotation(timestamp, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+        ops: &mut Operations,
+    ) -> anyhow::Result<()> {
+        Ok(self.0.remove_annotation(timestamp, ops.as_mut())?)
     }
 
-    #[pyo3(signature=(due=None))]
-    pub fn set_due(&mut self, due: Option<DateTime<Utc>>) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.set_due(due, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    #[pyo3(signature=(due, ops))]
+    pub fn set_due(
+        &mut self,
+        due: Option<DateTime<Utc>>,
+        ops: &mut Operations,
+    ) -> anyhow::Result<()> {
+        Ok(self.0.set_due(due, ops.as_mut())?)
     }
 
     pub fn set_uda(
@@ -330,53 +278,40 @@ impl Task {
         namespace: String,
         key: String,
         value: String,
-    ) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.set_uda(namespace, key, value, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+        ops: &mut Operations,
+    ) -> anyhow::Result<()> {
+        Ok(self.0.set_uda(namespace, key, value, ops.as_mut())?)
     }
 
-    pub fn remove_uda(&mut self, namespace: String, key: String) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.remove_uda(namespace, key, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn remove_uda(
+        &mut self,
+        namespace: String,
+        key: String,
+        ops: &mut Operations,
+    ) -> anyhow::Result<()> {
+        Ok(self.0.remove_uda(namespace, key, ops.as_mut())?)
     }
 
-    pub fn set_legacy_uda(&mut self, key: String, value: String) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.set_legacy_uda(key, value, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn set_legacy_uda(
+        &mut self,
+        key: String,
+        value: String,
+        ops: &mut Operations,
+    ) -> anyhow::Result<()> {
+        Ok(self.0.set_legacy_uda(key, value, ops.as_mut())?)
     }
 
-    pub fn remove_legacy_uda(&mut self, key: String) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-
-        self.0.remove_legacy_uda(key, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn remove_legacy_uda(&mut self, key: String, ops: &mut Operations) -> anyhow::Result<()> {
+        Ok(self.0.remove_legacy_uda(key, ops.as_mut())?)
     }
 
-    pub fn add_dependency(&mut self, dep: String) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-        let dep_uuid = Uuid::parse_str(&dep).expect("couldn't parse UUID");
-
-        self.0.add_dependency(dep_uuid, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn add_dependency(&mut self, dep: String, ops: &mut Operations) -> anyhow::Result<()> {
+        let dep_uuid = Uuid::parse_str(&dep)?;
+        Ok(self.0.add_dependency(dep_uuid, ops.as_mut())?)
     }
 
-    pub fn remove_dependency(&mut self, dep: String) -> anyhow::Result<Vec<Operation>> {
-        let mut ops: Vec<TCOperation> = Vec::new();
-        let dep_uuid = Uuid::parse_str(&dep).expect("couldn't parse UUID");
-
-        self.0.remove_dependency(dep_uuid, &mut ops).expect("");
-
-        Ok(ops.iter().map(|op| Operation(op.clone())).collect())
+    pub fn remove_dependency(&mut self, dep: String, ops: &mut Operations) -> anyhow::Result<()> {
+        let dep_uuid = Uuid::parse_str(&dep)?;
+        Ok(self.0.remove_dependency(dep_uuid, ops.as_mut())?)
     }
 }

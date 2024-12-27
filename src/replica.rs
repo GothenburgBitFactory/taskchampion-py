@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::task::TaskData;
-use crate::{DependencyMap, Operation, Task, WorkingSet};
+use crate::{DependencyMap, Operations, Task, WorkingSet};
 use pyo3::prelude::*;
-use taskchampion::{Operations as TCOperations, Replica as TCReplica, StorageConfig, Uuid};
+use taskchampion::{Replica as TCReplica, StorageConfig, Uuid};
 
 #[pyclass]
 /// A replica represents an instance of a user's task data, providing an easy interface
@@ -41,13 +41,12 @@ impl Replica {
 
     /// Create a new task
     /// The task must not already exist.
-    pub fn create_task(&mut self, uuid: String) -> anyhow::Result<(Task, Vec<Operation>)> {
-        let mut ops = TCOperations::new();
+    pub fn create_task(&mut self, uuid: String, ops: &mut Operations) -> anyhow::Result<Task> {
         let task = self
             .0
-            .create_task(Uuid::parse_str(&uuid)?, &mut ops)
+            .create_task(Uuid::parse_str(&uuid)?, ops.as_mut())
             .map(Task)?;
-        Ok((task, ops.iter().map(|op| Operation(op.clone())).collect()))
+        Ok(task)
     }
 
     /// Get a list of all tasks in the replica.
@@ -111,13 +110,15 @@ impl Replica {
     pub fn sync(&self, _avoid_snapshots: bool) {
         todo!()
     }
-    pub fn commit_operations(&mut self, operations: Vec<Operation>) -> anyhow::Result<()> {
-        let ops = operations.iter().map(|op| op.0.clone()).collect();
-        Ok(self.0.commit_operations(ops)?)
+
+    pub fn commit_operations(&mut self, ops: Operations) -> anyhow::Result<()> {
+        Ok(self.0.commit_operations(ops.into())?)
     }
+
     pub fn rebuild_working_set(&mut self, renumber: bool) -> anyhow::Result<()> {
         Ok(self.0.rebuild_working_set(renumber)?)
     }
+
     pub fn num_local_operations(&mut self) -> anyhow::Result<usize> {
         Ok(self.0.num_local_operations()?)
     }
@@ -126,20 +127,12 @@ impl Replica {
         Ok(self.0.num_local_operations()?)
     }
 
-    pub fn get_undo_operations(&mut self) -> anyhow::Result<Vec<Operation>> {
-        Ok(self
-            .0
-            .get_undo_operations()
-            .map(|ops| ops.iter().map(|op| Operation(op.clone())).collect())?)
+    pub fn get_undo_operations(&mut self) -> anyhow::Result<Operations> {
+        Ok(self.0.get_undo_operations()?.into())
     }
 
-    pub fn commit_reversed_operations(
-        &mut self,
-        operations: Vec<Operation>,
-    ) -> anyhow::Result<bool> {
-        let ops = operations.iter().map(|op| op.0.clone()).collect();
-
-        Ok(self.0.commit_reversed_operations(ops)?)
+    pub fn commit_reversed_operations(&mut self, operations: Operations) -> anyhow::Result<bool> {
+        Ok(self.0.commit_reversed_operations(operations.into())?)
     }
 
     pub fn expire_tasks(&mut self) -> anyhow::Result<()> {
