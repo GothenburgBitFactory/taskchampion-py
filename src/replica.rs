@@ -81,17 +81,19 @@ impl Replica {
     }
 
     pub fn dependency_map(&mut self, force: bool) -> anyhow::Result<DependencyMap> {
-        // TODO: kinda spaghetti here, it will do for now
-        let s = self
-            .0
-            .dependency_map(force)
-            .map(|rc| {
-                // TODO: better error handling here
-                Rc::into_inner(rc).unwrap()
-            })
-            .map(DependencyMap)?;
-
-        Ok(s)
+        // `Rc<T>` is not thread-safe, so we must get an owned copy of the data it contains.
+        // Unfortunately, it cannot be cloned, so this is impossible (but both issues are fixed in
+        // https://github.com/GothenburgBitFactory/taskchampion/pull/514).
+        //
+        // Until that point, we leak the Rc (preventing it from ever being freed) and use a static
+        // reference to its contents. This is safe based on the weak but currently valid assumption
+        // that TaskChampion does not modify a DependencyMap after creating it.
+        //
+        // This is a temporary hack, and should not be used in "real" code!
+        let dm = self.0.dependency_map(force)?;
+        // NOTE: this does not decrement the reference count and thus "leaks" the Rc.
+        let dm_ptr = Rc::into_raw(dm);
+        Ok(dm_ptr.into())
     }
 
     pub fn get_task(&mut self, uuid: String) -> anyhow::Result<Option<Task>> {

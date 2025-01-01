@@ -10,13 +10,14 @@ use dependency_map::*;
 pub mod operation;
 use operation::*;
 mod task;
-use task::{Annotation, Status, Tag, Task};
+use task::{Annotation, Status, Tag, Task, TaskData};
 
 #[pymodule]
 fn taskchampion(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Status>()?;
     m.add_class::<Replica>()?;
     m.add_class::<Task>()?;
+    m.add_class::<TaskData>()?;
     m.add_class::<Annotation>()?;
     m.add_class::<WorkingSet>()?;
     m.add_class::<Tag>()?;
