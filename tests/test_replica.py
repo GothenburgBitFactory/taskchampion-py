@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from taskchampion import Replica, Operations
 
+
 @pytest.fixture
 def empty_replica() -> Replica:
     return Replica.new_in_memory()

@@ -53,7 +53,3 @@ or
 poetry run maturin develop
 poetry run pytest
 ```
-
-## TODO
-
-- Possible integration with Github Workflows for deployment to PyPI

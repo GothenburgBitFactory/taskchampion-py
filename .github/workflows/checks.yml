@@ -45,7 +45,7 @@ jobs:
 
   fmt:
     runs-on: ubuntu-latest
-    name: "Formatting"
+    name: "Rust Formatting"
     steps:
       - uses: actions/checkout@v4
 
@@ -60,3 +60,10 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
+
+  black:
+    runs-on: ubuntu-latest
+    name: "Python Formatting"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: psf/black@stable

@@ -2,6 +2,7 @@ from taskchampion import Operation, Operations, TaskData
 import uuid
 import pytest
 
+
 @pytest.fixture
 def all_ops() -> Operations:
     "Return Operations containing one of each type of operation."
@@ -36,9 +37,11 @@ def test_indexing(all_ops: Operations):
     assert all_ops[1].is_update()
     assert all_ops[2].is_delete()
     assert all_ops[3].is_undo_point()
-    with pytest.raises(IndexError): all_ops[4]
+    with pytest.raises(IndexError):
+        all_ops[4]
     # For the moment, negative indices are not supported (although pyo3 docs suggest they should work)
-    with pytest.raises(OverflowError): all_ops[-1]
+    with pytest.raises(OverflowError):
+        all_ops[-1]
 
 
 def test_iteration(all_ops: Operations):
