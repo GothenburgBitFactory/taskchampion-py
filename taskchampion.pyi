@@ -3,7 +3,6 @@ from enum import Enum
 from typing import Optional, Iterator
 
 class Replica:
-    def __init__(self, path: str, create_if_missing: bool): ...
     @staticmethod
     def new_on_disk(path: str, create_if_missing: bool): ...
     @staticmethod
