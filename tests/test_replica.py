@@ -131,8 +131,3 @@ def test_num_undo_points(replica_with_tasks: Replica):
     replica_with_tasks.commit_operations(ops)
 
     assert replica_with_tasks.num_undo_points() == 4
-
-
-@pytest.mark.skip("Skipping as gotta actually polish it")
-def test_dependency_map(replica_with_tasks: Replica):
-    assert replica_with_tasks.dependency_map(False) is not None
