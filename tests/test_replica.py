@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from taskchampion import Replica
 
+
 @pytest.fixture
 def empty_replica() -> Replica:
     return Replica.new_in_memory()
@@ -30,6 +31,20 @@ def test_constructor(tmp_path: Path):
     r = Replica.new_on_disk(str(tmp_path), True)
 
     assert r is not None
+
+
+def test_sync_to_local(tmp_path: Path):
+    u = str(uuid.uuid4())
+    r = Replica.new_in_memory()
+    _, op = r.create_task(u)
+    r.commit_operations(op)
+    r.sync_to_local(str(tmp_path), False)
+
+    # Verify that task syncs to another replica.
+    r2 = Replica.new_in_memory()
+    r2.sync_to_local(str(tmp_path), False)
+    task = r2.get_task(u)
+    assert task
 
 
 def test_constructor_throws_error_with_missing_database(tmp_path: Path):

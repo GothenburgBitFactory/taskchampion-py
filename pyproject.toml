@@ -29,3 +29,8 @@ maturin = { extras = ["patchelf"], version = "^1.5.1" }
 [tool.poetry.group.test.dependencies]
 pytest = "^8.2.0"
 mypy = "^1.10.0"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
