@@ -13,19 +13,19 @@ def test_dependency_map():
     # Set up t3 depending on t2 depending on t1.
     t1, op = TaskData.create(u1)
     ops.append(op)
-    op = t1.update("status", "pending");
+    op = t1.update("status", "pending")
     ops.append(op)
     t2, op = TaskData.create(u2)
     ops.append(op)
-    op = t2.update("status", "pending");
+    op = t2.update("status", "pending")
     ops.append(op)
-    op = t2.update(f"dep_{u1}", "x");
+    op = t2.update(f"dep_{u1}", "x")
     ops.append(op)
     t3, op = TaskData.create(u3)
     ops.append(op)
-    op = t3.update("status", "pending");
+    op = t3.update("status", "pending")
     ops.append(op)
-    op = t3.update(f"dep_{u2}", "x");
+    op = t3.update(f"dep_{u2}", "x")
     ops.append(op)
 
     r.commit_operations(ops)
