@@ -12,6 +12,7 @@ use taskchampion::{Replica as TCReplica, ServerConfig, StorageConfig, Uuid};
 pub struct Replica(TCReplica);
 
 unsafe impl Send for Replica {}
+
 #[pymethods]
 impl Replica {
     #[staticmethod]
@@ -45,7 +46,7 @@ impl Replica {
         let task = self
             .0
             .create_task(Uuid::parse_str(&uuid)?, ops.as_mut())
-            .map(Task)?;
+            .map(Task::from)?;
         Ok(task)
     }
 
@@ -55,7 +56,7 @@ impl Replica {
             .0
             .all_tasks()?
             .into_iter()
-            .map(|(key, value)| (key.to_string(), Task(value)))
+            .map(|(key, value)| (key.to_string(), value.into()))
             .collect())
     }
 
@@ -64,7 +65,7 @@ impl Replica {
             .0
             .all_task_data()?
             .into_iter()
-            .map(|(key, value)| (key.to_string(), TaskData(value)))
+            .map(|(key, value)| (key.to_string(), TaskData::from(value)))
             .collect())
     }
     /// Get a list of all uuids for tasks in the replica.
@@ -99,14 +100,14 @@ impl Replica {
         Ok(self
             .0
             .get_task(Uuid::parse_str(&uuid).unwrap())
-            .map(|opt| opt.map(Task))?)
+            .map(|opt| opt.map(Task::from))?)
     }
 
     pub fn get_task_data(&mut self, uuid: String) -> anyhow::Result<Option<TaskData>> {
         Ok(self
             .0
             .get_task_data(Uuid::parse_str(&uuid)?)
-            .map(|opt| opt.map(TaskData))?)
+            .map(|opt| opt.map(TaskData::from))?)
     }
 
     /// Sync with a server crated from `ServerConfig::Local`.

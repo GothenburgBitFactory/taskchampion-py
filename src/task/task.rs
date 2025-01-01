@@ -4,33 +4,33 @@ use chrono::{DateTime, Utc};
 use pyo3::prelude::*;
 use taskchampion::{Task as TCTask, Uuid};
 
-// TODO: actually create a front-facing user class, instead of this data blob
-#[pyclass]
-pub struct Task(pub(crate) TCTask);
-
-unsafe impl Send for Task {}
-
-impl Task {
-    fn to_datetime(s: Option<String>) -> anyhow::Result<Option<DateTime<Utc>>> {
-        s.map(|time| Ok(DateTime::parse_from_rfc3339(&time)?.with_timezone(&chrono::Utc)))
-            .transpose()
-    }
-}
+// TODO: This type can be send once https://github.com/GothenburgBitFactory/taskchampion/pull/514
+// is available.
+#[pyclass(unsendable)]
+/// A TaskChampion Task.
+///
+/// This type is not Send, so it cannot be used from any thread but the one where it was created.
+pub struct Task(TCTask);
 
 #[pymethods]
 impl Task {
+    fn __repr__(&self) -> String {
+        format!("{:?}", self.as_ref())
+    }
+
     #[allow(clippy::wrong_self_convention)]
     pub fn into_task_data(&self) -> TaskData {
-        TaskData(self.0.clone().into_task_data())
+        self.0.clone().into_task_data().into()
     }
+
     /// Get a tasks UUID
     ///
     /// Returns:
     ///     str: UUID of a task
-    // TODO: possibly determine if it's possible to turn this from/into python's UUID instead
     pub fn get_uuid(&self) -> String {
         self.0.get_uuid().to_string()
     }
+
     /// Get a task's status
     /// Returns:
     ///     Status: Status subtype
@@ -38,6 +38,7 @@ impl Task {
         self.0.get_status().into()
     }
 
+    /// Get a task's description
     pub fn get_description(&self) -> String {
         self.0.get_description().to_string()
     }
@@ -47,7 +48,6 @@ impl Task {
     /// Returns:
     ///     str: RFC3339 timestamp
     ///     None: No timestamp
-    // Attempt to convert this into a python datetime later on
     pub fn get_entry(&self) -> Option<DateTime<Utc>> {
         self.0.get_entry()
     }
@@ -68,6 +68,7 @@ impl Task {
     pub fn get_wait(&self) -> Option<DateTime<Utc>> {
         self.0.get_wait()
     }
+
     /// Check if the task is waiting
     ///
     /// Returns:
@@ -83,6 +84,7 @@ impl Task {
     pub fn is_active(&self) -> bool {
         self.0.is_active()
     }
+
     /// Check if the task is blocked
     ///
     /// Returns:
@@ -90,6 +92,7 @@ impl Task {
     pub fn is_blocked(&self) -> bool {
         self.0.is_blocked()
     }
+
     /// Check if the task is blocking
     ///
     /// Returns:
@@ -97,6 +100,7 @@ impl Task {
     pub fn is_blocking(&self) -> bool {
         self.0.is_blocking()
     }
+
     /// Check if the task has a tag
     ///
     /// Returns:
@@ -112,12 +116,13 @@ impl Task {
     pub fn get_tags(&self) -> Vec<Tag> {
         self.0.get_tags().map(Tag::from).collect()
     }
+
     /// Get task annotations
     ///
     /// Returns:
     ///     list[Annotation]: list of task annotations
     pub fn get_annotations(&self) -> Vec<Annotation> {
-        self.0.get_annotations().map(Annotation).collect()
+        self.0.get_annotations().map(Annotation::from).collect()
     }
 
     /// Get a task UDA
@@ -133,12 +138,10 @@ impl Task {
         self.0.get_uda(namespace, key)
     }
 
-    // TODO: this signature is ugly and confising, possibly replace this with a struct in the
-    // actual code
     /// get all the task's UDAs
     ///
     /// Returns:
-    ///     Uh oh, ew?
+    ///    List of tuples ((namespace, key), value)
     pub fn get_udas(&self) -> Vec<((&str, &str), &str)> {
         self.0.get_udas().collect()
     }
@@ -198,21 +201,30 @@ impl Task {
     }
 
     #[pyo3(signature=(entry, ops))]
-    pub fn set_entry(&mut self, entry: Option<String>, ops: &mut Operations) -> anyhow::Result<()> {
-        let timestamp = Self::to_datetime(entry)?;
-        Ok(self.0.set_entry(timestamp, ops.as_mut())?)
+    pub fn set_entry(
+        &mut self,
+        entry: Option<DateTime<Utc>>,
+        ops: &mut Operations,
+    ) -> anyhow::Result<()> {
+        Ok(self.0.set_entry(entry, ops.as_mut())?)
     }
 
     #[pyo3(signature=(wait, ops))]
-    pub fn set_wait(&mut self, wait: Option<String>, ops: &mut Operations) -> anyhow::Result<()> {
-        let timestamp = Self::to_datetime(wait)?;
-        Ok(self.0.set_wait(timestamp, ops.as_mut())?)
+    pub fn set_wait(
+        &mut self,
+        wait: Option<DateTime<Utc>>,
+        ops: &mut Operations,
+    ) -> anyhow::Result<()> {
+        Ok(self.0.set_wait(wait, ops.as_mut())?)
     }
 
     #[pyo3(signature=(modified, ops))]
-    pub fn set_modified(&mut self, modified: String, ops: &mut Operations) -> anyhow::Result<()> {
-        let timestamp = DateTime::parse_from_rfc3339(&modified)?.with_timezone(&chrono::Utc);
-        Ok(self.0.set_modified(timestamp, ops.as_mut())?)
+    pub fn set_modified(
+        &mut self,
+        modified: DateTime<Utc>,
+        ops: &mut Operations,
+    ) -> anyhow::Result<()> {
+        Ok(self.0.set_modified(modified, ops.as_mut())?)
     }
 
     #[pyo3(signature=(property, value, ops))]
@@ -245,13 +257,15 @@ impl Task {
         Ok(self.0.remove_tag(tag.as_ref(), ops.as_mut())?)
     }
 
-    pub fn add_annotation(&mut self, ann: &Annotation, ops: &mut Operations) -> anyhow::Result<()> {
-        // Create an owned annotation
-        let mut annotation = Annotation::new();
-        annotation.set_entry(ann.entry());
-        annotation.set_description(ann.description());
-
-        Ok(self.0.add_annotation(annotation.0, ops.as_mut())?)
+    pub fn add_annotation(
+        &mut self,
+        annotation: &Annotation,
+        ops: &mut Operations,
+    ) -> anyhow::Result<()> {
+        // Create an owned annotation (TODO: not needed once
+        // https://github.com/GothenburgBitFactory/taskchampion/pull/517 is available)
+        let annotation = Annotation::new(annotation.entry(), annotation.description());
+        Ok(self.0.add_annotation(annotation.into(), ops.as_mut())?)
     }
 
     pub fn remove_annotation(
@@ -311,5 +325,23 @@ impl Task {
     pub fn remove_dependency(&mut self, dep: String, ops: &mut Operations) -> anyhow::Result<()> {
         let dep_uuid = Uuid::parse_str(&dep)?;
         Ok(self.0.remove_dependency(dep_uuid, ops.as_mut())?)
+    }
+}
+
+impl AsRef<TCTask> for Task {
+    fn as_ref(&self) -> &TCTask {
+        &self.0
+    }
+}
+
+impl From<TCTask> for Task {
+    fn from(value: TCTask) -> Self {
+        Task(value)
+    }
+}
+
+impl From<Task> for TCTask {
+    fn from(value: Task) -> Self {
+        value.0
     }
 }

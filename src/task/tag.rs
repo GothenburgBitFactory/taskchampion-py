@@ -1,7 +1,8 @@
 use pyo3::{exceptions::PyValueError, prelude::*};
 use taskchampion::Tag as TCTag;
 
-#[pyclass]
+#[pyclass(frozen, eq, hash)]
+#[derive(PartialEq, Eq, Hash)]
 pub struct Tag(TCTag);
 
 #[pymethods]

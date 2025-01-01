@@ -1,18 +1,28 @@
+import pytest
+from datetime import datetime
 from taskchampion import Annotation
 
 
-# IDK if this is a good idea, but it seems overkill to have another test to
-# test the getter ... while using it for testing
-def test_get_set_entry():
-    a = Annotation()
-    a.entry = "2024-05-07T01:35:57+03:00"
-
-    assert a.entry == "2024-05-06T22:35:57+00:00"
+@pytest.fixture
+def entry() -> datetime:
+    return datetime.fromisoformat("2024-05-07T01:35:57+00:00")
 
 
-def test_get_set_description():
-    a = Annotation()
+@pytest.fixture
+def annotation(entry) -> Annotation:
+    return Annotation(entry, "descr")
 
-    a.description = "This is a basic description"
 
-    assert a.description == "This is a basic description"
+def test_entry(entry, annotation):
+    assert annotation.entry == entry
+
+
+def test_repr(entry, annotation):
+    assert (
+        repr(annotation)
+        == 'Annotation { entry: 2024-05-07T01:35:57Z, description: "descr" }'
+    )
+
+
+def test_description(annotation):
+    assert annotation.description == "descr"
