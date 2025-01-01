@@ -93,10 +93,8 @@ impl Task {
     ///
     /// Returns:
     ///     bool: if the task has a given tag
-    // TODO: Not very user friendly; User has to construct a Tag object and then pass is into here.
-    // Should probably use a string
     pub fn has_tag(&self, tag: &Tag) -> bool {
-        self.0.has_tag(&tag.0)
+        self.0.has_tag(tag.as_ref())
     }
 
     /// Get task tags
@@ -104,7 +102,7 @@ impl Task {
     /// Returns:
     ///     list[str]: list of tags
     pub fn get_tags(&self) -> Vec<Tag> {
-        self.0.get_tags().map(Tag).collect()
+        self.0.get_tags().map(Tag::from).collect()
     }
     /// Get task annotations
     ///
@@ -280,7 +278,7 @@ impl Task {
     pub fn add_tag(&mut self, tag: &Tag) -> anyhow::Result<Vec<Operation>> {
         let mut ops: Vec<TCOperation> = Vec::new();
 
-        self.0.add_tag(&tag.0, &mut ops).expect("");
+        self.0.add_tag(tag.as_ref(), &mut ops).expect("");
 
         Ok(ops.iter().map(|op| Operation(op.clone())).collect())
     }
@@ -288,7 +286,7 @@ impl Task {
     pub fn remove_tag(&mut self, tag: &Tag) -> anyhow::Result<Vec<Operation>> {
         let mut ops: Vec<TCOperation> = Vec::new();
 
-        self.0.remove_tag(&tag.0, &mut ops).expect("");
+        self.0.remove_tag(tag.as_ref(), &mut ops).expect("");
 
         Ok(ops.iter().map(|op| Operation(op.clone())).collect())
     }

@@ -1,23 +1,44 @@
-use pyo3::prelude::*;
+use pyo3::{exceptions::PyValueError, prelude::*};
 use taskchampion::Tag as TCTag;
 
-/// TODO: following the api there currently is no way to construct the task by hand, not sure if this is
-/// correct
 #[pyclass]
-pub struct Tag(pub(crate) TCTag);
+pub struct Tag(TCTag);
 
 #[pymethods]
 impl Tag {
     #[new]
-    pub fn new(tag: String) -> anyhow::Result<Self> {
-        Ok(Tag(tag.parse()?))
+    pub fn new(tag: String) -> PyResult<Self> {
+        Ok(Tag(tag
+            .parse()
+            .map_err(|_| PyValueError::new_err("Invalid tag"))?))
     }
+
+    pub fn __repr__(&self) -> String {
+        format!("{:?}", self.0)
+    }
+
+    pub fn __str__(&self) -> String {
+        self.0.to_string()
+    }
+
     pub fn is_synthetic(&self) -> bool {
         self.0.is_synthetic()
     }
 
     pub fn is_user(&self) -> bool {
         self.0.is_user()
+    }
+}
+
+impl AsRef<TCTag> for Tag {
+    fn as_ref(&self) -> &TCTag {
+        &self.0
+    }
+}
+
+impl From<TCTag> for Tag {
+    fn from(value: TCTag) -> Self {
+        Tag(value)
     }
 }
 
