@@ -1,4 +1,4 @@
-from taskchampion import Replica, WorkingSet, Status
+from taskchampion import Replica, WorkingSet, Status, Operations
 from pathlib import Path
 import pytest
 import uuid
@@ -8,16 +8,12 @@ import uuid
 def working_set():
     r = Replica.new_in_memory()
 
-    ops = []
-    task, op = r.create_task(str(uuid.uuid4()))
-    ops.extend(op)
-    ops.extend(task.set_status(Status.Pending))
-
-    task, op = r.create_task(str(uuid.uuid4()))
-    ops.extend(op)
-    ops.extend(task.set_status(Status.Pending))
-
-    ops.extend(task.start())
+    ops = Operations()
+    task = r.create_task(str(uuid.uuid4()), ops)
+    task.set_status(Status.Pending, ops)
+    task = r.create_task(str(uuid.uuid4()), ops)
+    task.set_status(Status.Pending, ops)
+    task.start(ops)
     r.commit_operations(ops)
 
     return r.working_set()

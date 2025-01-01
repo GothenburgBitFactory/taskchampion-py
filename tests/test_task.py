@@ -1,4 +1,4 @@
-from taskchampion import Task, Replica, Status, Tag
+from taskchampion import Task, Replica, Status, Tag, Operations
 from datetime import datetime
 import pytest
 import uuid
@@ -7,10 +7,9 @@ import uuid
 @pytest.fixture
 def new_task():
     r = Replica.new_in_memory()
-    result = r.create_task(str(uuid.uuid4()))
-
-    assert result is not None
-    task, _ = result
+    ops = Operations()
+    task = r.create_task(str(uuid.uuid4()), ops)
+    r.commit_operations(ops)
 
     return task
 
@@ -18,14 +17,12 @@ def new_task():
 @pytest.fixture
 def waiting_task():
     r = Replica.new_in_memory()
-    result = r.create_task(str(uuid.uuid4()))
-
-    assert result is not None
-    task, _ = result
-
-    task.set_wait("2038-01-19T03:14:07+00:00")
-    task.set_priority("10")
-    task.add_tag(Tag("example_tag"))
+    ops = Operations()
+    task = r.create_task(str(uuid.uuid4()), ops)
+    task.set_wait("2038-01-19T03:14:07+00:00", ops)
+    task.set_priority("10", ops)
+    task.add_tag(Tag("example_tag"), ops)
+    r.commit_operations(ops)
 
     return task
 
@@ -33,23 +30,20 @@ def waiting_task():
 @pytest.fixture
 def started_task():
     r = Replica.new_in_memory()
+    ops = Operations()
+    task = r.create_task(str(uuid.uuid4()), ops)
+    task.start(ops)
+    r.commit_operations(ops)
 
-    result = r.create_task(str(uuid.uuid4()))
-    assert result is not None
-    task, _ = result
-
-    task.start()
     return task
 
 
 @pytest.fixture
 def blocked_task():
     r = Replica.new_in_memory()
-    result = r.create_task(str(uuid.uuid4()))
-
-    assert result is not None
-
-    task, _ = result
+    ops = Operations()
+    task = r.create_task(str(uuid.uuid4()), ops)
+    r.commit_operations(ops)
 
     # Fragile test, but I cannot mock Rust's Chrono, so this will do.
     # Need to refresh the tag, the one that's in memory is stale
@@ -59,9 +53,10 @@ def blocked_task():
 @pytest.fixture
 def due_task():
     r = Replica.new_in_memory()
-    task, _ = r.create_task(str(uuid.uuid4()))
-
-    task.set_due(datetime.fromisoformat("2006-05-13T01:27:27+00:00"))
+    ops = Operations()
+    task = r.create_task(str(uuid.uuid4()), ops)
+    task.set_due(datetime.fromisoformat("2006-05-13T01:27:27+00:00"), ops)
+    r.commit_operations(ops)
     # Need to refresh the tag, the one that's in memory is stale
 
     return task
