@@ -4,7 +4,7 @@ use std::rc::Rc;
 use crate::task::TaskData;
 use crate::{DependencyMap, Operations, Task, WorkingSet};
 use pyo3::prelude::*;
-use taskchampion::{Replica as TCReplica, StorageConfig, Uuid};
+use taskchampion::{Replica as TCReplica, ServerConfig, StorageConfig, Uuid};
 
 #[pyclass]
 /// A replica represents an instance of a user's task data, providing an easy interface
@@ -107,12 +107,52 @@ impl Replica {
             .map(|opt| opt.map(TaskData))?)
     }
 
-    pub fn sync(&self, _avoid_snapshots: bool) {
-        todo!()
+    /// Sync with a server crated from `ServerConfig::Local`.
+    fn sync_to_local(&mut self, server_dir: String, avoid_snapshots: bool) -> anyhow::Result<()> {
+        let mut server = ServerConfig::Local {
+            server_dir: server_dir.into(),
+        }
+        .into_server()?;
+        Ok(self.0.sync(&mut server, avoid_snapshots)?)
     }
 
     pub fn commit_operations(&mut self, ops: Operations) -> anyhow::Result<()> {
         Ok(self.0.commit_operations(ops.into())?)
+    }
+
+    /// Sync with a server created from `ServerConfig::Remote`.
+    fn sync_to_remote(
+        &mut self,
+        url: String,
+        client_id: String,
+        encryption_secret: String,
+        avoid_snapshots: bool,
+    ) -> anyhow::Result<()> {
+        let mut server = ServerConfig::Remote {
+            url,
+            client_id: Uuid::parse_str(&client_id)?,
+            encryption_secret: encryption_secret.into(),
+        }
+        .into_server()?;
+        Ok(self.0.sync(&mut server, avoid_snapshots)?)
+    }
+
+    /// Sync with a server created from `ServerConfig::Gcp`.
+    #[pyo3(signature=(bucket, credential_path, encryption_secret, avoid_snapshots))]
+    fn sync_to_gcp(
+        &mut self,
+        bucket: String,
+        credential_path: Option<String>,
+        encryption_secret: String,
+        avoid_snapshots: bool,
+    ) -> anyhow::Result<()> {
+        let mut server = ServerConfig::Gcp {
+            bucket,
+            credential_path,
+            encryption_secret: encryption_secret.into(),
+        }
+        .into_server()?;
+        Ok(self.0.sync(&mut server, avoid_snapshots)?)
     }
 
     pub fn rebuild_working_set(&mut self, renumber: bool) -> anyhow::Result<()> {

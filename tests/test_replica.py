@@ -27,6 +27,21 @@ def test_constructor(tmp_path: Path):
     assert r is not None
 
 
+def test_sync_to_local(tmp_path: Path):
+    u = str(uuid.uuid4())
+    r = Replica.new_in_memory()
+    ops = Operations()
+    r.create_task(u, ops)
+    r.commit_operations(ops)
+    r.sync_to_local(str(tmp_path), False)
+
+    # Verify that task syncs to another replica.
+    r2 = Replica.new_in_memory()
+    r2.sync_to_local(str(tmp_path), False)
+    task = r2.get_task(u)
+    assert task
+
+
 def test_constructor_throws_error_with_missing_database(tmp_path: Path):
     with pytest.raises(RuntimeError):
         Replica.new_on_disk(str(tmp_path), False)
