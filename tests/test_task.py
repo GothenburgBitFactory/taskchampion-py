@@ -45,8 +45,6 @@ def blocked_task():
     task = r.create_task(str(uuid.uuid4()), ops)
     r.commit_operations(ops)
 
-    # Fragile test, but I cannot mock Rust's Chrono, so this will do.
-    # Need to refresh the tag, the one that's in memory is stale
     return task
 
 
@@ -57,7 +55,18 @@ def due_task():
     task = r.create_task(str(uuid.uuid4()), ops)
     task.set_due(datetime.fromisoformat("2006-05-13T01:27:27+00:00"), ops)
     r.commit_operations(ops)
-    # Need to refresh the tag, the one that's in memory is stale
+
+    return task
+
+
+@pytest.fixture
+def task_with_description():
+    r = Replica.new_in_memory()
+    ops = Operations()
+    task = r.create_task(str(uuid.uuid4()), ops)
+
+    task.set_description("This is a description", ops)
+    r.commit_operations(ops)
 
     return task
 
@@ -124,3 +133,7 @@ def test_get_modified(waiting_task: Task):
 
 def test_get_due(due_task: Task):
     assert due_task.get_due() == datetime.fromisoformat("2006-05-13T01:27:27+00:00")
+
+
+def test_get_description(task_with_description):
+    assert task_with_description.get_description() == "This is a description"
