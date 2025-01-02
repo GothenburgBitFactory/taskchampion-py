@@ -1,36 +1,48 @@
-use chrono::DateTime;
+use chrono::{DateTime, Utc};
 use pyo3::prelude::*;
 use taskchampion::Annotation as TCAnnotation;
-#[pyclass]
+
+#[pyclass(frozen, eq)]
+#[derive(PartialEq, Eq)]
 /// An annotation for the task
-pub struct Annotation(pub(crate) TCAnnotation);
+pub struct Annotation(TCAnnotation);
 
 #[pymethods]
 impl Annotation {
     #[new]
-    pub fn new() -> Self {
-        Annotation(TCAnnotation {
-            entry: DateTime::default(),
-            description: String::new(),
-        })
-    }
-    #[getter]
-    pub fn entry(&self) -> String {
-        self.0.entry.to_rfc3339()
+    pub fn new(entry: DateTime<Utc>, description: String) -> Self {
+        Annotation(TCAnnotation { entry, description })
     }
 
-    #[setter]
-    pub fn set_entry(&mut self, time: String) {
-        self.0.entry = DateTime::parse_from_rfc3339(&time).unwrap().into()
+    pub fn __repr__(&self) -> String {
+        format!("{:?}", self.as_ref())
+    }
+
+    #[getter]
+    pub fn entry(&self) -> DateTime<Utc> {
+        self.0.entry
     }
 
     #[getter]
     pub fn description(&self) -> String {
         self.0.description.clone()
     }
+}
 
-    #[setter]
-    pub fn set_description(&mut self, description: String) {
-        self.0.description = description
+impl AsRef<TCAnnotation> for Annotation {
+    fn as_ref(&self) -> &TCAnnotation {
+        &self.0
+    }
+}
+
+impl From<TCAnnotation> for Annotation {
+    fn from(value: TCAnnotation) -> Self {
+        Annotation(value)
+    }
+}
+
+impl From<Annotation> for TCAnnotation {
+    fn from(value: Annotation) -> Self {
+        value.0
     }
 }

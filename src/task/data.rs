@@ -3,7 +3,7 @@ use pyo3::{exceptions::PyValueError, prelude::*};
 use taskchampion::{TaskData as TCTaskData, Uuid};
 
 #[pyclass]
-pub struct TaskData(pub(crate) TCTaskData);
+pub struct TaskData(TCTaskData);
 
 #[pymethods]
 impl TaskData {
@@ -13,7 +13,10 @@ impl TaskData {
         Ok(TaskData(TCTaskData::create(u, ops.as_mut())))
     }
 
-    #[getter(uuid)]
+    pub fn __repr__(&self) -> String {
+        format!("{:?}", self.0)
+    }
+
     pub fn get_uuid(&self) -> String {
         self.0.get_uuid().into()
     }
@@ -33,5 +36,23 @@ impl TaskData {
 
     pub fn delete(&mut self, ops: &mut Operations) {
         self.0.delete(ops.as_mut());
+    }
+}
+
+impl From<TCTaskData> for TaskData {
+    fn from(value: TCTaskData) -> Self {
+        TaskData(value)
+    }
+}
+
+impl From<TaskData> for TCTaskData {
+    fn from(value: TaskData) -> Self {
+        value.0
+    }
+}
+
+impl AsRef<TCTaskData> for TaskData {
+    fn as_ref(&self) -> &TCTaskData {
+        &self.0
     }
 }
