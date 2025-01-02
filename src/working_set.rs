@@ -1,9 +1,11 @@
+use std::fmt;
+
 use pyo3::prelude::*;
 use taskchampion::Uuid;
 use taskchampion::WorkingSet as TCWorkingSet;
-// TODO: convert working set into python's iterable type
+
 #[pyclass]
-pub struct WorkingSet(pub(crate) TCWorkingSet);
+pub struct WorkingSet(TCWorkingSet);
 
 #[pyclass]
 struct WorkingSetIter {
@@ -26,6 +28,10 @@ impl WorkingSet {
         self.0.len()
     }
 
+    pub fn __repr__(&self) -> String {
+        format!("{:?}", self)
+    }
+
     pub fn largest_index(&self) -> usize {
         self.0.largest_index()
     }
@@ -39,7 +45,6 @@ impl WorkingSet {
     }
 
     pub fn by_uuid(&self, uuid: String) -> Option<usize> {
-        // TODO I don't like the conversion, should use try-expect or something else as an input
         self.0.by_uuid(Uuid::parse_str(&uuid).unwrap())
     }
 
@@ -53,5 +58,33 @@ impl WorkingSet {
         let iter = WorkingSetIter { iter };
 
         Py::new(slf.py(), iter)
+    }
+}
+
+// TODO: Use the Taskchampion Debug implementation when
+// https://github.com/GothenburgBitFactory/taskchampion/pull/520 is available.
+impl fmt::Debug for WorkingSet {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("WorkingSet {")?;
+        f.debug_list().entries(self.0.iter()).finish()?;
+        f.write_str("}")
+    }
+}
+
+impl AsRef<TCWorkingSet> for WorkingSet {
+    fn as_ref(&self) -> &TCWorkingSet {
+        &self.0
+    }
+}
+
+impl From<TCWorkingSet> for WorkingSet {
+    fn from(value: TCWorkingSet) -> Self {
+        WorkingSet(value)
+    }
+}
+
+impl From<WorkingSet> for TCWorkingSet {
+    fn from(value: WorkingSet) -> Self {
+        value.0
     }
 }
