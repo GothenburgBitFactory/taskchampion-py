@@ -6,12 +6,14 @@ use crate::{DependencyMap, Operations, Task, WorkingSet};
 use pyo3::prelude::*;
 use taskchampion::{Replica as TCReplica, ServerConfig, StorageConfig, Uuid};
 
-#[pyclass]
+#[pyclass(unsendable)]
 /// A replica represents an instance of a user's task data, providing an easy interface
 /// for querying and modifying that data.
+///
+/// A replica can only be used in the thread in which it was created. Use from any other
+/// thread will panic.
 pub struct Replica(TCReplica);
 
-unsafe impl Send for Replica {}
 #[pymethods]
 impl Replica {
     #[staticmethod]
