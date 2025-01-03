@@ -3,16 +3,18 @@ from enum import Enum
 from typing import Optional, Iterator, final
 
 __all__ = [
-    "Replica", 
-    "Operation", 
-    "Operations", 
-    "Status", 
-    "TaskData", 
-    "Task", "WorkingSet", 
-    "Annotation", 
-    "Tag", 
-    "DependencyMap"
+    "Replica",
+    "Operation",
+    "Operations",
+    "Status",
+    "TaskData",
+    "Task",
+    "WorkingSet",
+    "Annotation",
+    "Tag",
+    "DependencyMap",
 ]
+
 @final
 class Replica:
     @staticmethod
@@ -57,8 +59,8 @@ class Operation:
         uuid: str,
         property: str,
         timestamp: str,
-        old_value: Optional[str]=None,
-        value: Optional[str]=None,
+        old_value: Optional[str] = None,
+        value: Optional[str] = None,
     ) -> "Operation": ...
     @staticmethod
     def UndoPoint() -> "Operation": ...
