@@ -78,7 +78,7 @@ impl Replica {
     }
 
     pub fn working_set(&mut self) -> anyhow::Result<WorkingSet> {
-        Ok(self.0.working_set().map(WorkingSet)?)
+        Ok(self.0.working_set().map(WorkingSet::from)?)
     }
 
     pub fn dependency_map(&mut self, force: bool) -> anyhow::Result<DependencyMap> {
