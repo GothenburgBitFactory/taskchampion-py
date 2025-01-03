@@ -1,6 +1,6 @@
 [package]
 name = "taskchampion-py"
-version = "0.7.0.1-pre"
+version = "0.7.0"
 edition = "2021"
 # This should match the MSRV of the `taskchampion` crate.
 rust-version = "1.78.0"

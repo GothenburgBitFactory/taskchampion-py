@@ -4,6 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "taskchampion-py"
+version = "0.7.0"
 requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Rust",
@@ -14,7 +15,6 @@ authors = [
     {name = "Illya Laifu", email="illyalaifu@gmail.com"},
     {name = "Dustin J. Mitchell", email="dustin@v.igoro.us"},
 ]
-dynamic = ["version"]
 license = {file = "LICENSE"}
 readme = "README.md"
 
