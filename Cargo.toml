@@ -1,6 +1,6 @@
 [package]
 name = "taskchampion-py"
-version = "0.7.0"
+version = "1.0.2"
 edition = "2021"
 # This should match the MSRV of the `taskchampion` crate.
 rust-version = "1.78.0"
@@ -17,4 +17,4 @@ doc = false
 pyo3 = { version = "0.22.6", features = ["anyhow", "chrono"] }
 chrono = "*"
 anyhow = "*"
-taskchampion = { version = "0.7.0" }
+taskchampion = { version = "=1.0.2" }
