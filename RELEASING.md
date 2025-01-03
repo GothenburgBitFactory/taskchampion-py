@@ -8,7 +8,8 @@ fourth number, e.g., `1.2.0.1`.
 
 To bump the TaskChampion version, update both the `package.version` and
 `dependencies.taskchampion.version` properties in `Cargo.toml`, and update
-`project.version` in `pyproject.toml`.
+`project.version` in `pyproject.toml`. Run `Cargo build` to update
+`Cargo.lock`.
 
 ## Releasing TaskChampion-Py
 
