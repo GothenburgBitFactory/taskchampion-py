@@ -1468,7 +1468,7 @@ dependencies = [
 
 [[package]]
 name = "taskchampion-py"
-version = "0.7.0-pre1"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "chrono",
