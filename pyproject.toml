@@ -10,7 +10,18 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
+authors = [
+    {name = "Illya Laifu", email="illyalaifu@gmail.com"},
+    {name = "Dustin J. Mitchell", email="dustin@v.igoro.us"},
+]
 dynamic = ["version"]
+license = {file = "LICENSE"}
+readme = "README.md"
+
+[project.urls]
+homepage = "https://gothenburgbitfactory.org/taskchampion"
+repository = "https://github.com/GothenburgBitFactory/taskchampion-py"
+changelog = "https://github.com/GothenburgBitFactory/taskchampion-py/releases"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
