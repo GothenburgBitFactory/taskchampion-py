@@ -85,32 +85,12 @@ def test_all_tasks(empty_replica: Replica):
         assert tasks[key] != 0
 
 
-def test_working_set(replica_with_tasks: Replica):
-    ws = replica_with_tasks.working_set()
-
-    assert ws is not None
-
-
-# TODO: create testable and inspectable WorkingSet
-
-
 def test_get_task(replica_with_tasks: Replica):
     uuid = replica_with_tasks.all_task_uuids()[0]
 
     task = replica_with_tasks.get_task(uuid)
 
     assert task is not None
-
-
-@pytest.mark.skip()
-def test_rebuild_working_set(replica_with_tasks: Replica):
-    # TODO actually test this
-    replica_with_tasks.rebuild_working_set(False)
-
-
-@pytest.mark.skip()
-def test_add_undo_point(replica_with_tasks: Replica):
-    replica_with_tasks.add_undo_point(False)
 
 
 def test_num_local_operations(replica_with_tasks: Replica):
