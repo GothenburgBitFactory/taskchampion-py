@@ -195,3 +195,16 @@ jobs:
       - run: poetry install
       - run: poetry run pip install wheels-linux-x86_64/*
       - run: poetry run pytest
+
+  stubtest:
+    runs-on: ubuntu-latest
+    name: "Stub Test"
+    needs: linux
+    steps:
+      - uses: actions/download-artifact@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+      - run: pip install wheels-linux-x86_64/*
+      - run: pip install mypy
+      - run: python -m mypy.stubtest taskchampion --ignore-missing-stub
