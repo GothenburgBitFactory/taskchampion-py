@@ -181,6 +181,21 @@ jobs:
           command: upload
           args: --non-interactive --skip-existing wheels-*/*
 
+  pytest-linux:
+    runs-on: ubuntu-latest
+    name: "Python Tests (on built wheel)"
+    needs: linux
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+      - run: pip install poetry
+      - run: poetry install
+      - run: poetry run pip install wheels-linux-x86_64/*
+      - run: poetry run pytest
+
   stubtest:
     runs-on: ubuntu-latest
     name: "Stub Test"
