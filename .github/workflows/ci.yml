@@ -191,7 +191,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.9
-      - run: pip install poetry
+      - run: pip install 'poetry<2'
       - run: poetry install
       - run: poetry run pip install wheels-linux-x86_64/*
       - run: poetry run pytest

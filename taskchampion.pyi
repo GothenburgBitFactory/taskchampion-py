@@ -18,7 +18,11 @@ __all__ = [
 @final
 class Replica:
     @staticmethod
-    def new_on_disk(path: str, create_if_missing: bool): ...
+    def new_on_disk(
+        path: str,
+        create_if_missing: bool,
+        access_mode: "AccessMode" = AccessMode.ReadWrite,
+    ): ...
     @staticmethod
     def new_in_memory(): ...
     def create_task(self, uuid: str, ops: "Operations") -> "Task": ...
@@ -47,6 +51,11 @@ class Replica:
     def num_undo_points(self) -> int: ...
     def commit_operations(self, ops: "Operations") -> None: ...
     def commit_reversed_operations(self, operations: "Operations") -> None: ...
+
+@final
+class AccessMode(Enum):
+    ReadWrite = 1
+    ReadOnly = 2
 
 @final
 class Operation:
