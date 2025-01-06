@@ -14,6 +14,8 @@ use operations::*;
 mod task;
 use task::{Annotation, Status, Tag, Task, TaskData};
 
+mod util;
+
 #[pymodule]
 fn taskchampion(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Status>()?;

@@ -14,7 +14,6 @@ crate-type = ["cdylib"]
 doc = false
 
 [dependencies]
-pyo3 = { version = "0.22.6", features = ["anyhow", "chrono"] }
+pyo3 = { version = "0.22.6", features = ["chrono"] }
 chrono = "*"
-anyhow = "*"
 taskchampion = { version = "=1.0.2" }

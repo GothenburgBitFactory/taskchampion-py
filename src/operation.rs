@@ -1,8 +1,8 @@
-use chrono::DateTime;
+use crate::util::uuid2tc;
+use chrono::{DateTime, Utc};
 use pyo3::{exceptions::PyAttributeError, prelude::*};
-
 use std::collections::HashMap;
-use taskchampion::{Operation as TCOperation, Uuid};
+use taskchampion::Operation as TCOperation;
 
 #[pyclass]
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -17,17 +17,17 @@ pub struct Operation(pub(crate) TCOperation);
 impl Operation {
     #[allow(non_snake_case)]
     #[staticmethod]
-    pub fn Create(uuid: String) -> anyhow::Result<Operation> {
+    pub fn Create(uuid: String) -> PyResult<Operation> {
         Ok(Operation(TCOperation::Create {
-            uuid: Uuid::parse_str(&uuid)?,
+            uuid: uuid2tc(uuid)?,
         }))
     }
 
     #[allow(non_snake_case)]
     #[staticmethod]
-    pub fn Delete(uuid: String, old_task: HashMap<String, String>) -> anyhow::Result<Operation> {
+    pub fn Delete(uuid: String, old_task: HashMap<String, String>) -> PyResult<Operation> {
         Ok(Operation(TCOperation::Delete {
-            uuid: Uuid::parse_str(&uuid)?,
+            uuid: uuid2tc(uuid)?,
             old_task,
         }))
     }
@@ -38,16 +38,16 @@ impl Operation {
     pub fn Update(
         uuid: String,
         property: String,
-        timestamp: String,
+        timestamp: DateTime<Utc>,
         old_value: Option<String>,
         value: Option<String>,
-    ) -> anyhow::Result<Operation> {
+    ) -> PyResult<Operation> {
         Ok(Operation(TCOperation::Update {
-            uuid: Uuid::parse_str(&uuid)?,
+            uuid: uuid2tc(uuid)?,
             property,
             old_value,
             value,
-            timestamp: DateTime::parse_from_rfc3339(&timestamp).unwrap().into(),
+            timestamp,
         }))
     }
 
@@ -113,10 +113,10 @@ impl Operation {
     }
 
     #[getter(timestamp)]
-    pub fn get_timestamp(&self) -> PyResult<String> {
+    pub fn get_timestamp(&self) -> PyResult<DateTime<Utc>> {
         use TCOperation::*;
         match &self.0 {
-            Update { timestamp, .. } => Ok(timestamp.to_string()),
+            Update { timestamp, .. } => Ok(*timestamp),
             _ => Err(PyAttributeError::new_err(
                 "Variant does not have attribute 'timestamp'",
             )),

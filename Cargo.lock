@@ -1672,7 +1672,6 @@ version = "0.22.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f402062616ab18202ae8319da13fa4279883a2b8a9d9f83f20dbade813ce1884"
 dependencies = [
- "anyhow",
  "cfg-if",
  "chrono",
  "indoc",
@@ -2393,7 +2392,6 @@ dependencies = [
 name = "taskchampion-py"
 version = "1.0.2"
 dependencies = [
- "anyhow",
  "chrono",
  "pyo3",
  "taskchampion",
