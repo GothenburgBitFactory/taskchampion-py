@@ -23,6 +23,7 @@ impl Replica {
     ///     access_mode (AccessMode): controls whether write access is allowed
     /// Raises:
     ///     RuntimeError: if database does not exist, and create_if_missing is false
+
     #[pyo3(signature=(path, create_if_missing, access_mode=AccessMode::ReadWrite))]
     pub fn new_on_disk(
         path: String,
@@ -35,87 +36,104 @@ impl Replica {
                 create_if_missing,
                 access_mode: access_mode.into(),
             }
-            .into_storage()?,
+            .into_storage()
+            .map_err(into_runtime_error)?,
         )))
     }
 
     #[staticmethod]
-    pub fn new_in_memory() -> anyhow::Result<Self> {
+    pub fn new_in_memory() -> PyResult<Self> {
         Ok(Replica(TCReplica::new(
-            StorageConfig::InMemory.into_storage()?,
+            StorageConfig::InMemory
+                .into_storage()
+                .map_err(into_runtime_error)?,
         )))
     }
 
     /// Create a new task
     /// The task must not already exist.
-    pub fn create_task(&mut self, uuid: String, ops: &mut Operations) -> anyhow::Result<Task> {
+    pub fn create_task(&mut self, uuid: String, ops: &mut Operations) -> PyResult<Task> {
         let task = self
             .0
-            .create_task(Uuid::parse_str(&uuid)?, ops.as_mut())
-            .map(Task::from)?;
+            .create_task(uuid2tc(uuid)?, ops.as_mut())
+            .map_err(into_runtime_error)?
+            .into();
         Ok(task)
     }
 
     /// Get a list of all tasks in the replica.
-    pub fn all_tasks(&mut self) -> anyhow::Result<HashMap<String, Task>> {
+    pub fn all_tasks(&mut self) -> PyResult<HashMap<String, Task>> {
         Ok(self
             .0
-            .all_tasks()?
+            .all_tasks()
+            .map_err(into_runtime_error)?
             .into_iter()
             .map(|(key, value)| (key.to_string(), value.into()))
             .collect())
     }
 
-    pub fn all_task_data(&mut self) -> anyhow::Result<HashMap<String, TaskData>> {
+    pub fn all_task_data(&mut self) -> PyResult<HashMap<String, TaskData>> {
         Ok(self
             .0
-            .all_task_data()?
+            .all_task_data()
+            .map_err(into_runtime_error)?
             .into_iter()
             .map(|(key, value)| (key.to_string(), TaskData::from(value)))
             .collect())
     }
     /// Get a list of all uuids for tasks in the replica.
-    pub fn all_task_uuids(&mut self) -> anyhow::Result<Vec<String>> {
+    pub fn all_task_uuids(&mut self) -> PyResult<Vec<String>> {
         Ok(self
             .0
             .all_task_uuids()
-            .map(|v| v.iter().map(|item| item.to_string()).collect())?)
+            .map_err(into_runtime_error)?
+            .iter()
+            .map(|item| item.to_string())
+            .collect())
     }
 
-    pub fn working_set(&mut self) -> anyhow::Result<WorkingSet> {
-        Ok(self.0.working_set().map(WorkingSet::from)?)
+    pub fn working_set(&mut self) -> PyResult<WorkingSet> {
+        Ok(self.0.working_set().map_err(into_runtime_error)?.into())
     }
 
     pub fn dependency_map(&mut self, force: bool) -> anyhow::Result<DependencyMap> {
         let dm = self.0.dependency_map(force)?;
         Ok(dm.into())
+
     }
 
-    pub fn get_task(&mut self, uuid: String) -> anyhow::Result<Option<Task>> {
+    pub fn get_task(&mut self, uuid: String) -> PyResult<Option<Task>> {
         Ok(self
             .0
-            .get_task(Uuid::parse_str(&uuid).unwrap())
-            .map(|opt| opt.map(Task::from))?)
+            .get_task(uuid2tc(uuid)?)
+            .map_err(into_runtime_error)?
+            .map(|t| t.into()))
     }
 
-    pub fn get_task_data(&mut self, uuid: String) -> anyhow::Result<Option<TaskData>> {
+    pub fn get_task_data(&mut self, uuid: String) -> PyResult<Option<TaskData>> {
         Ok(self
             .0
-            .get_task_data(Uuid::parse_str(&uuid)?)
-            .map(|opt| opt.map(TaskData::from))?)
+            .get_task_data(uuid2tc(uuid)?)
+            .map_err(into_runtime_error)?
+            .map(TaskData::from))
+    }
+
+    pub fn commit_operations(&mut self, ops: Operations) -> PyResult<()> {
+        self.0
+            .commit_operations(ops.into())
+            .map_err(into_runtime_error)
     }
 
     /// Sync with a server crated from `ServerConfig::Local`.
-    fn sync_to_local(&mut self, server_dir: String, avoid_snapshots: bool) -> anyhow::Result<()> {
+    fn sync_to_local(&mut self, server_dir: String, avoid_snapshots: bool) -> PyResult<()> {
         let mut server = ServerConfig::Local {
             server_dir: server_dir.into(),
         }
-        .into_server()?;
-        Ok(self.0.sync(&mut server, avoid_snapshots)?)
-    }
-
-    pub fn commit_operations(&mut self, ops: Operations) -> anyhow::Result<()> {
-        Ok(self.0.commit_operations(ops.into())?)
+        .into_server()
+        .map_err(into_runtime_error)?;
+        self.0
+            .sync(&mut server, avoid_snapshots)
+            .map_err(into_runtime_error)
     }
 
     /// Sync with a server created from `ServerConfig::Remote`.
@@ -125,14 +143,17 @@ impl Replica {
         client_id: String,
         encryption_secret: String,
         avoid_snapshots: bool,
-    ) -> anyhow::Result<()> {
+    ) -> PyResult<()> {
         let mut server = ServerConfig::Remote {
             url,
-            client_id: Uuid::parse_str(&client_id)?,
+            client_id: uuid2tc(client_id)?,
             encryption_secret: encryption_secret.into(),
         }
-        .into_server()?;
-        Ok(self.0.sync(&mut server, avoid_snapshots)?)
+        .into_server()
+        .map_err(into_runtime_error)?;
+        self.0
+            .sync(&mut server, avoid_snapshots)
+            .map_err(into_runtime_error)
     }
 
     /// Sync with a server created from `ServerConfig::Gcp`.
@@ -143,37 +164,48 @@ impl Replica {
         credential_path: Option<String>,
         encryption_secret: String,
         avoid_snapshots: bool,
-    ) -> anyhow::Result<()> {
+    ) -> PyResult<()> {
         let mut server = ServerConfig::Gcp {
             bucket,
             credential_path,
             encryption_secret: encryption_secret.into(),
         }
-        .into_server()?;
-        Ok(self.0.sync(&mut server, avoid_snapshots)?)
+        .into_server()
+        .map_err(into_runtime_error)?;
+        self.0
+            .sync(&mut server, avoid_snapshots)
+            .map_err(into_runtime_error)
     }
 
-    pub fn rebuild_working_set(&mut self, renumber: bool) -> anyhow::Result<()> {
-        Ok(self.0.rebuild_working_set(renumber)?)
+    pub fn rebuild_working_set(&mut self, renumber: bool) -> PyResult<()> {
+        self.0
+            .rebuild_working_set(renumber)
+            .map_err(into_runtime_error)
     }
 
-    pub fn num_local_operations(&mut self) -> anyhow::Result<usize> {
-        Ok(self.0.num_local_operations()?)
+    pub fn num_local_operations(&mut self) -> PyResult<usize> {
+        self.0.num_local_operations().map_err(into_runtime_error)
     }
 
-    pub fn num_undo_points(&mut self) -> anyhow::Result<usize> {
-        Ok(self.0.num_local_operations()?)
+    pub fn num_undo_points(&mut self) -> PyResult<usize> {
+        self.0.num_local_operations().map_err(into_runtime_error)
     }
 
-    pub fn get_undo_operations(&mut self) -> anyhow::Result<Operations> {
-        Ok(self.0.get_undo_operations()?.into())
+    pub fn get_undo_operations(&mut self) -> PyResult<Operations> {
+        Ok(self
+            .0
+            .get_undo_operations()
+            .map_err(into_runtime_error)?
+            .into())
     }
 
-    pub fn commit_reversed_operations(&mut self, operations: Operations) -> anyhow::Result<bool> {
-        Ok(self.0.commit_reversed_operations(operations.into())?)
+    pub fn commit_reversed_operations(&mut self, operations: Operations) -> PyResult<bool> {
+        self.0
+            .commit_reversed_operations(operations.into())
+            .map_err(into_runtime_error)
     }
 
-    pub fn expire_tasks(&mut self) -> anyhow::Result<()> {
-        Ok(self.0.expire_tasks()?)
+    pub fn expire_tasks(&mut self) -> PyResult<()> {
+        self.0.expire_tasks().map_err(into_runtime_error)
     }
 }

@@ -1,4 +1,5 @@
 from taskchampion import Operation
+from datetime import datetime
 import pytest
 
 
@@ -45,10 +46,11 @@ def test_delete():
 
 
 def test_update():
+    ts = datetime.fromisoformat("2038-01-19T03:14:07+00:00")
     o = Operation.Update(
         "10c52749-aec7-4ec9-b390-f371883b9605",
         "foo",
-        "2038-01-19T03:14:07+00:00",
+        ts,
         "old",
         "new",
     )
@@ -64,16 +66,17 @@ def test_update():
     with pytest.raises(AttributeError):
         o.old_task
     assert o.property == "foo"
-    assert o.timestamp == "2038-01-19 03:14:07 UTC"
+    assert o.timestamp == ts
     assert o.old_value == "old"
     assert o.value == "new"
 
 
 def test_update_none():
+    ts = datetime.fromisoformat("2038-01-19T03:14:07+00:00")
     o = Operation.Update(
         "10c52749-aec7-4ec9-b390-f371883b9605",
         "foo",
-        "2038-01-19T03:14:07+00:00",
+        ts,
         None,
         None,
     )
