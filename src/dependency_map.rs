@@ -1,14 +1,11 @@
 use pyo3::prelude::*;
+use std::sync::Arc;
 use taskchampion::{DependencyMap as TCDependencyMap, Uuid};
 
 // See `Replica::dependency_map` for the rationale for using a raw pointer here.
 
 #[pyclass]
-pub struct DependencyMap(*const TCDependencyMap);
-
-// SAFETY: `Replica::dependency_map` ensures that the TCDependencyMap is never freed (as the Rc is
-// leaked) and TaskChampion does not modify it, so no races can occur.
-unsafe impl Send for DependencyMap {}
+pub struct DependencyMap(Arc<TCDependencyMap>);
 
 #[pymethods]
 impl DependencyMap {
@@ -33,16 +30,14 @@ impl DependencyMap {
     }
 }
 
-impl From<*const TCDependencyMap> for DependencyMap {
-    fn from(value: *const TCDependencyMap) -> Self {
+impl From<Arc<TCDependencyMap>> for DependencyMap {
+    fn from(value: Arc<TCDependencyMap>) -> Self {
         DependencyMap(value)
     }
 }
 
 impl AsRef<TCDependencyMap> for DependencyMap {
     fn as_ref(&self) -> &TCDependencyMap {
-        // SAFETY: `Replica::dependency_map` ensures that the TCDependencyMap is never freed (as
-        // the Rc is leaked) and TaskChampion does not modify it, so no races can occur.
-        unsafe { &*self.0 as &TCDependencyMap }
+        Arc::as_ref(&self.0)
     }
 }

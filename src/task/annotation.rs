@@ -3,7 +3,7 @@ use pyo3::prelude::*;
 use taskchampion::Annotation as TCAnnotation;
 
 #[pyclass(frozen, eq)]
-#[derive(PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 /// An annotation for the task
 pub struct Annotation(TCAnnotation);
 

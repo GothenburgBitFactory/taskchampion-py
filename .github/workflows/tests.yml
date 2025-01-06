@@ -29,15 +29,13 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: "1.78.0" # MSRV
+          toolchain: "1.81.0" # MSRV
           override: true
           components: clippy
 
       - uses: actions/setup-python@v5
         with:
           python-version: 3.9
-
-      # See #36 for upgrading to poetry 2.0.
       - run: pip install 'poetry<2'
       - run: poetry install
       - run: poetry run maturin develop

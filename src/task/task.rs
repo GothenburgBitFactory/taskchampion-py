@@ -5,9 +5,7 @@ use chrono::{DateTime, Utc};
 use pyo3::prelude::*;
 use taskchampion::Task as TCTask;
 
-// TODO: This type can be send once https://github.com/GothenburgBitFactory/taskchampion/pull/514
-// is available.
-#[pyclass(unsendable)]
+#[pyclass]
 /// A TaskChampion Task.
 ///
 /// This type is not Send, so it cannot be used from any thread but the one where it was created.
@@ -264,14 +262,7 @@ impl Task {
             .map_err(into_runtime_error)
     }
 
-    pub fn add_annotation(
-        &mut self,
-        annotation: &Annotation,
-        ops: &mut Operations,
-    ) -> PyResult<()> {
-        // Create an owned annotation (TODO: not needed once
-        // https://github.com/GothenburgBitFactory/taskchampion/pull/517 is available)
-        let annotation = Annotation::new(annotation.entry(), annotation.description());
+    pub fn add_annotation(&mut self, annotation: Annotation, ops: &mut Operations) -> PyResult<()> {
         self.0
             .add_annotation(annotation.into(), ops.as_mut())
             .map_err(into_runtime_error)

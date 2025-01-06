@@ -1,9 +1,8 @@
 use crate::task::TaskData;
 use crate::util::{into_runtime_error, uuid2tc};
-use crate::{DependencyMap, Operations, Task, WorkingSet};
+use crate::{AccessMode, DependencyMap, Operations, Task, WorkingSet};
 use pyo3::prelude::*;
 use std::collections::HashMap;
-use std::rc::Rc;
 use taskchampion::{Replica as TCReplica, ServerConfig, StorageConfig};
 
 #[pyclass(unsendable)]
@@ -22,13 +21,21 @@ impl Replica {
     /// Args:
     ///     path (str): path to the directory with the database
     ///     create_if_missing (bool): create the database if it does not exist
+    ///     access_mode (AccessMode): controls whether write access is allowed
     /// Raises:
     ///     RuntimeError: if database does not exist, and create_if_missing is false
-    pub fn new_on_disk(path: String, create_if_missing: bool) -> PyResult<Replica> {
+
+    #[pyo3(signature=(path, create_if_missing, access_mode=AccessMode::ReadWrite))]
+    pub fn new_on_disk(
+        path: String,
+        create_if_missing: bool,
+        access_mode: AccessMode,
+    ) -> PyResult<Replica> {
         Ok(Replica(TCReplica::new(
             StorageConfig::OnDisk {
                 taskdb_dir: path.into(),
                 create_if_missing,
+                access_mode: access_mode.into(),
             }
             .into_storage()
             .map_err(into_runtime_error)?,
@@ -91,19 +98,8 @@ impl Replica {
     }
 
     pub fn dependency_map(&mut self, force: bool) -> PyResult<DependencyMap> {
-        // `Rc<T>` is not thread-safe, so we must get an owned copy of the data it contains.
-        // Unfortunately, it cannot be cloned, so this is impossible (but both issues are fixed in
-        // https://github.com/GothenburgBitFactory/taskchampion/pull/514).
-        //
-        // Until that point, we leak the Rc (preventing it from ever being freed) and use a static
-        // reference to its contents. This is safe based on the weak but currently valid assumption
-        // that TaskChampion does not modify a DependencyMap after creating it.
-        //
-        // This is a temporary hack, and should not be used in "real" code!
         let dm = self.0.dependency_map(force).map_err(into_runtime_error)?;
-        // NOTE: this does not decrement the reference count and thus "leaks" the Rc.
-        let dm_ptr = Rc::into_raw(dm);
-        Ok(dm_ptr.into())
+        Ok(dm.into())
     }
 
     pub fn get_task(&mut self, uuid: String) -> PyResult<Option<Task>> {

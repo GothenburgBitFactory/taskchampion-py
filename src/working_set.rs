@@ -1,5 +1,3 @@
-use std::fmt;
-
 use pyo3::prelude::*;
 use taskchampion::Uuid;
 use taskchampion::WorkingSet as TCWorkingSet;
@@ -29,7 +27,7 @@ impl WorkingSet {
     }
 
     pub fn __repr__(&self) -> String {
-        format!("{:?}", self)
+        format!("{:?}", self.0)
     }
 
     pub fn largest_index(&self) -> usize {
@@ -58,16 +56,6 @@ impl WorkingSet {
         let iter = WorkingSetIter { iter };
 
         Py::new(slf.py(), iter)
-    }
-}
-
-// TODO: Use the Taskchampion Debug implementation when
-// https://github.com/GothenburgBitFactory/taskchampion/pull/520 is available.
-impl fmt::Debug for WorkingSet {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("WorkingSet {")?;
-        f.debug_list().entries(self.0.iter()).finish()?;
-        f.write_str("}")
     }
 }
 

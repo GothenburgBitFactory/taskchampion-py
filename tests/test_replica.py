@@ -2,7 +2,7 @@ import uuid
 from pathlib import Path
 
 import pytest
-from taskchampion import Replica, Operations
+from taskchampion import Replica, Operations, AccessMode
 
 
 @pytest.fixture
@@ -23,7 +23,6 @@ def replica_with_tasks(empty_replica: Replica):
 
 def test_constructor(tmp_path: Path):
     r = Replica.new_on_disk(str(tmp_path), True)
-
     assert r is not None
 
 
@@ -45,6 +44,14 @@ def test_sync_to_local(tmp_path: Path):
 def test_constructor_throws_error_with_missing_database(tmp_path: Path):
     with pytest.raises(RuntimeError):
         Replica.new_on_disk(str(tmp_path), False)
+
+
+def test_read_only(tmp_path: Path):
+    r = Replica.new_on_disk(str(tmp_path), True, AccessMode.ReadOnly)
+    ops = Operations()
+    r.create_task(str(uuid.uuid4()), ops)
+    with pytest.raises(RuntimeError):
+        r.commit_operations(ops)
 
 
 def test_create_task(empty_replica: Replica):
