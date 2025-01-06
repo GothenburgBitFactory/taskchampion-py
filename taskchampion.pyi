@@ -58,7 +58,7 @@ class Operation:
     def Update(
         uuid: str,
         property: str,
-        timestamp: str,
+        timestamp: datetime,
         old_value: Optional[str] = None,
         value: Optional[str] = None,
     ) -> "Operation": ...
@@ -71,7 +71,7 @@ class Operation:
 
     uuid: str
     old_task: dict[str, str]
-    timestamp: str
+    timestamp: datetime
     property: Optional[str]
     old_value: Optional[str]
     value: Optional[str]
