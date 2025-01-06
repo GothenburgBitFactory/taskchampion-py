@@ -1,6 +1,6 @@
 [package]
 name = "taskchampion-py"
-version = "2.0.1"
+version = "2.0.2"
 edition = "2021"
 # This should match the MSRV of the `taskchampion` crate.
 rust-version = "1.81.0"
@@ -16,4 +16,4 @@ doc = false
 [dependencies]
 pyo3 = { version = "0.22.6", features = ["chrono"] }
 chrono = "*"
-taskchampion = { version = "=2.0.1" }
+taskchampion = { version = "=2.0.2" }
