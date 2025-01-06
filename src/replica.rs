@@ -1,8 +1,9 @@
 use crate::task::TaskData;
+use crate::util::{into_runtime_error, uuid2tc};
 use crate::{AccessMode, DependencyMap, Operations, Task, WorkingSet};
 use pyo3::prelude::*;
 use std::collections::HashMap;
-use taskchampion::{Replica as TCReplica, ServerConfig, StorageConfig, Uuid};
+use taskchampion::{Replica as TCReplica, ServerConfig, StorageConfig};
 
 #[pyclass(unsendable)]
 /// A replica represents an instance of a user's task data, providing an easy interface
@@ -29,7 +30,7 @@ impl Replica {
         path: String,
         create_if_missing: bool,
         access_mode: AccessMode,
-    ) -> anyhow::Result<Replica> {
+    ) -> PyResult<Replica> {
         Ok(Replica(TCReplica::new(
             StorageConfig::OnDisk {
                 taskdb_dir: path.into(),
@@ -96,10 +97,9 @@ impl Replica {
         Ok(self.0.working_set().map_err(into_runtime_error)?.into())
     }
 
-    pub fn dependency_map(&mut self, force: bool) -> anyhow::Result<DependencyMap> {
-        let dm = self.0.dependency_map(force)?;
+    pub fn dependency_map(&mut self, force: bool) -> PyResult<DependencyMap> {
+        let dm = self.0.dependency_map(force).map_err(into_runtime_error)?;
         Ok(dm.into())
-
     }
 
     pub fn get_task(&mut self, uuid: String) -> PyResult<Option<Task>> {

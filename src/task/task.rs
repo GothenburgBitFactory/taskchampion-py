@@ -262,12 +262,10 @@ impl Task {
             .map_err(into_runtime_error)
     }
 
-    pub fn add_annotation(
-        &mut self,
-        annotation: Annotation,
-        ops: &mut Operations,
-    ) -> anyhow::Result<()> {
-        Ok(self.0.add_annotation(annotation.into(), ops.as_mut())?)
+    pub fn add_annotation(&mut self, annotation: Annotation, ops: &mut Operations) -> PyResult<()> {
+        self.0
+            .add_annotation(annotation.into(), ops.as_mut())
+            .map_err(into_runtime_error)
     }
 
     pub fn remove_annotation(
