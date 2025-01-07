@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "taskchampion-py"
-version = "2.0.2"
+version = "2.0.2.1"
 requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Rust",
