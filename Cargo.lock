@@ -2362,9 +2362,9 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
 name = "taskchampion"
-version = "2.0.1"
+version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ba26a986269f2b24f34d64f777abca9abb3f2923fd83111ce831100f292459f"
+checksum = "830bb062bb2d89bdee0063d7c02d1e24ee0a1702c683f394eb0520fb88dc4a5c"
 dependencies = [
  "anyhow",
  "aws-config",
@@ -2390,7 +2390,7 @@ dependencies = [
 
 [[package]]
 name = "taskchampion-py"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "chrono",
  "pyo3",
