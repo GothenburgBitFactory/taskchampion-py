@@ -23,6 +23,7 @@ jobs:
           python-version: '3.9'
       - run: pip install poetry
       - run: poetry install
+      - run: poetry run pip install pdoc
       - run: poetry run maturin develop
       - run: poetry run pdoc -o docs/
       - uses: actions/upload-pages-artifact@v3
