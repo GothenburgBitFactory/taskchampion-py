@@ -4,6 +4,10 @@ use taskchampion::Operations as TCOperations;
 
 #[pyclass(sequence)]
 #[derive(PartialEq, Eq, Clone, Debug)]
+/// A sequence of Operations.
+///
+/// This is a list-like type, and can be indexed, iterated over, and so on like any
+/// other list-like type.
 pub struct Operations(TCOperations);
 
 #[pymethods]

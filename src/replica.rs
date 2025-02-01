@@ -18,13 +18,10 @@ impl Replica {
     #[staticmethod]
     /// Create a Replica with on-disk storage.
     ///
-    /// Args:
-    ///     path (str): path to the directory with the database
-    ///     create_if_missing (bool): create the database if it does not exist
-    ///     access_mode (AccessMode): controls whether write access is allowed
-    /// Raises:
-    ///     RuntimeError: if database does not exist, and create_if_missing is false
-
+    /// This is equivalent to created a `StorgeConfig::OnDisk` with the given parameters and
+    /// passing that to `Replica::new`.
+    ///
+    /// Raises `RuntimeError` if the database does not exist, and `create_if_missing` is false
     #[pyo3(signature=(path, create_if_missing, access_mode=AccessMode::ReadWrite))]
     pub fn new_on_disk(
         path: String,
@@ -43,6 +40,7 @@ impl Replica {
     }
 
     #[staticmethod]
+    /// Create a Replica with in-memory storage.
     pub fn new_in_memory() -> PyResult<Self> {
         Ok(Replica(TCReplica::new(
             StorageConfig::InMemory
@@ -51,8 +49,6 @@ impl Replica {
         )))
     }
 
-    /// Create a new task
-    /// The task must not already exist.
     pub fn create_task(&mut self, uuid: String, ops: &mut Operations) -> PyResult<Task> {
         let task = self
             .0
@@ -62,7 +58,6 @@ impl Replica {
         Ok(task)
     }
 
-    /// Get a list of all tasks in the replica.
     pub fn all_tasks(&mut self) -> PyResult<HashMap<String, Task>> {
         Ok(self
             .0
@@ -82,7 +77,7 @@ impl Replica {
             .map(|(key, value)| (key.to_string(), TaskData::from(value)))
             .collect())
     }
-    /// Get a list of all uuids for tasks in the replica.
+
     pub fn all_task_uuids(&mut self) -> PyResult<Vec<String>> {
         Ok(self
             .0
