@@ -6,14 +6,14 @@ use taskchampion::Operation as TCOperation;
 
 #[pyclass]
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct Operation(pub(crate) TCOperation);
-
-#[pymethods]
-/// An Operation defines a single change to the task database, as stored locally in the replica.
+/// A TaskChampion Operation.
 ///
 /// This is an enum in Rust, represented here with four static constructors for the variants,
 /// four `is_..` methods for determining the type, and getters for each variant field. The
 /// getters raise `AttributeError` for variants that do not have the given property.
+pub struct Operation(pub(crate) TCOperation);
+
+#[pymethods]
 impl Operation {
     #[allow(non_snake_case)]
     #[staticmethod]
@@ -78,6 +78,7 @@ impl Operation {
     }
 
     #[getter(uuid)]
+    /// Present on the Create, Update, and Delete variants.
     pub fn get_uuid(&self) -> PyResult<String> {
         use TCOperation::*;
         match &self.0 {
@@ -91,6 +92,7 @@ impl Operation {
     }
 
     #[getter(old_task)]
+    /// Present on the Delete variant.
     pub fn get_old_task(&self) -> PyResult<HashMap<String, String>> {
         use TCOperation::*;
         match &self.0 {
@@ -102,6 +104,7 @@ impl Operation {
     }
 
     #[getter(property)]
+    /// Present on the Update variant.
     pub fn get_property(&self) -> PyResult<String> {
         use TCOperation::*;
         match &self.0 {
@@ -113,6 +116,7 @@ impl Operation {
     }
 
     #[getter(timestamp)]
+    /// Present on the Update variant.
     pub fn get_timestamp(&self) -> PyResult<DateTime<Utc>> {
         use TCOperation::*;
         match &self.0 {
@@ -124,6 +128,7 @@ impl Operation {
     }
 
     #[getter(old_value)]
+    /// Present on the Update variant.
     pub fn get_old_value(&self) -> PyResult<Option<String>> {
         use TCOperation::*;
         match &self.0 {
@@ -135,6 +140,7 @@ impl Operation {
     }
 
     #[getter(value)]
+    /// Present on the Update variant.
     pub fn get_value(&self) -> PyResult<Option<String>> {
         use TCOperation::*;
         match &self.0 {

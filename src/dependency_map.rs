@@ -2,8 +2,6 @@ use pyo3::prelude::*;
 use std::sync::Arc;
 use taskchampion::{DependencyMap as TCDependencyMap, Uuid};
 
-// See `Replica::dependency_map` for the rationale for using a raw pointer here.
-
 #[pyclass]
 pub struct DependencyMap(Arc<TCDependencyMap>);
 

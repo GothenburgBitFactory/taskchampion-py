@@ -2,6 +2,10 @@ use pyo3::{exceptions::PyValueError, prelude::*};
 use taskchampion::Tag as TCTag;
 
 #[pyclass(frozen, eq, hash)]
+/// A TaskChampion Tag.
+///
+/// The constructor for this type parses its argument using the `FromStr`
+/// trait, and supports both synthetic and user tags.
 #[derive(PartialEq, Eq, Hash)]
 pub struct Tag(TCTag);
 

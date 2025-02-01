@@ -8,7 +8,8 @@ pub enum Status {
     Completed,
     Deleted,
     Recurring,
-    /// IMPORTANT: #[pyclass] only supports unit variants
+    // IMPORTANT: #[pyclass] only supports unit variants, so cannot keep the
+    // string form of this status.
     Unknown,
 }
 
