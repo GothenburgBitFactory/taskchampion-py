@@ -16,8 +16,12 @@ from taskchampion import Replica
 # Set up a replica.
 r = Replica.new_on_disk("/some/path", true)
 
-# (more TBD)
+# .. and so on, very similar to the Rust API.
 ```
+
+See the [API
+documentation](https://github.com/GothenburgBitFactory/taskchampion-py/issues/6)
+for more information.
 
 ## Development
 
