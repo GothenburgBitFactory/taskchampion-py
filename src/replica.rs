@@ -132,6 +132,7 @@ impl Replica {
     }
 
     /// Sync with a server created from `ServerConfig::Remote`.
+    #[cfg(feature = "server-sync")]
     fn sync_to_remote(
         &mut self,
         url: String,
@@ -152,6 +153,7 @@ impl Replica {
     }
 
     /// Sync with a server created from `ServerConfig::Gcp`.
+    #[cfg(feature = "server-gcp")]
     #[pyo3(signature=(bucket, credential_path, encryption_secret, avoid_snapshots))]
     fn sync_to_gcp(
         &mut self,
