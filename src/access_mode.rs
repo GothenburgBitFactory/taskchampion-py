@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 pub use taskchampion::storage::AccessMode as TCAccessMode;
 
-#[pyclass(eq, eq_int)]
+#[pyclass(from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum AccessMode {
     ReadOnly,

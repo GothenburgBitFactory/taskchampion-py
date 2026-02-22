@@ -2,7 +2,7 @@ use crate::Operation;
 use pyo3::{exceptions::PyIndexError, prelude::*};
 use taskchampion::Operations as TCOperations;
 
-#[pyclass(sequence)]
+#[pyclass(from_py_object, sequence)]
 #[derive(PartialEq, Eq, Clone, Debug)]
 /// A sequence of Operations.
 ///

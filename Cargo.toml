@@ -3,7 +3,7 @@ name = "taskchampion-py"
 version = "2.0.2"
 edition = "2021"
 # This should match the MSRV of the `taskchampion` crate.
-rust-version = "1.81.0"
+rust-version = "1.83.0"
 
 [package.metadata.maturin]
 name = "taskchampion"
@@ -14,6 +14,6 @@ crate-type = ["cdylib"]
 doc = false
 
 [dependencies]
-pyo3 = { version = "0.22.6", features = ["chrono"] }
+pyo3 = { version = "0.28", features = ["chrono"] }
 chrono = "*"
 taskchampion = { version = "=2.0.2" }

@@ -4,7 +4,7 @@ use pyo3::{exceptions::PyAttributeError, prelude::*};
 use std::collections::HashMap;
 use taskchampion::Operation as TCOperation;
 
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(PartialEq, Eq, Clone, Debug)]
 /// A TaskChampion Operation.
 ///

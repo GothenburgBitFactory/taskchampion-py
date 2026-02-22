@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use pyo3::prelude::*;
 use taskchampion::Annotation as TCAnnotation;
 
-#[pyclass(frozen, eq)]
+#[pyclass(from_py_object, frozen, eq)]
 #[derive(Clone, PartialEq, Eq)]
 /// An annotation for the task
 pub struct Annotation(TCAnnotation);
