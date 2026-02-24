@@ -5,6 +5,16 @@ edition = "2021"
 # This should match the MSRV of the `taskchampion` crate.
 rust-version = "1.83.0"
 
+[features]
+default = ["sync"]
+
+# Support for all sync solutions
+sync = ["server-sync", "server-gcp"]
+# Support for sync to a server
+server-sync = ["taskchampion/server-sync"]
+# Support for sync to GCP
+server-gcp = ["taskchampion/server-gcp"]
+
 [package.metadata.maturin]
 name = "taskchampion"
 
@@ -16,4 +26,4 @@ doc = false
 [dependencies]
 pyo3 = { version = "0.28", features = ["chrono"] }
 chrono = "*"
-taskchampion = { version = "=2.0.2" }
+taskchampion = { version = "=2.0.2", default-features = false, features = ["bundled"] }
