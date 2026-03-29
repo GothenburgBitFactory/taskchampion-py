@@ -185,7 +185,7 @@ impl Replica {
     }
 
     pub fn num_undo_points(&mut self) -> PyResult<usize> {
-        self.0.num_local_operations().map_err(into_runtime_error)
+        self.0.num_undo_points().map_err(into_runtime_error)
     }
 
     pub fn get_undo_operations(&mut self) -> PyResult<Operations> {
