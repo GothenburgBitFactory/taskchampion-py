@@ -20,7 +20,7 @@ r = Replica.new_on_disk("/some/path", true)
 ```
 
 See the [API
-documentation](https://github.com/GothenburgBitFactory/taskchampion-py/issues/6)
+documentation](https://gothenburgbitfactory.org/taskchampion-py/taskchampion.html)
 for more information.
 
 ## Development
