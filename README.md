@@ -41,6 +41,9 @@ Description: test1
 UUID: f5bc3f9d-d97d-4165-863d-2e08d6b53dc9
 Status: Status.Pending
 ```
+Do not worry about the strange numbers under entry, modified, and due. When the API is used to fetch the data, it is converted into a user-friendly date/time. For example, on test 1 the task.get_entry() gives you: 2026-04-01 01:33:11+00:00
+
+This is another reason why you should use the UUIDs to work with the tasks rather than interfacing directly with the dictionary. 
 
 
 See the [API
