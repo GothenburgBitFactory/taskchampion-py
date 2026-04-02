@@ -2,7 +2,7 @@ import uuid
 from pathlib import Path
 
 import pytest
-from taskchampion import Replica, Operations, AccessMode
+from taskchampion import Replica, Operations, Operation, AccessMode
 
 
 @pytest.fixture
@@ -111,10 +111,10 @@ def test_num_local_operations(replica_with_tasks: Replica):
 
 
 def test_num_undo_points(replica_with_tasks: Replica):
-    assert replica_with_tasks.num_undo_points() == 3
+    assert replica_with_tasks.num_undo_points() == 0
 
     ops = Operations()
-    _ = replica_with_tasks.create_task(str(uuid.uuid4()), ops)
+    ops.append(Operation.UndoPoint())
     replica_with_tasks.commit_operations(ops)
 
-    assert replica_with_tasks.num_undo_points() == 4
+    assert replica_with_tasks.num_undo_points() == 1
