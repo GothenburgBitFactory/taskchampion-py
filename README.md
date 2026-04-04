@@ -12,11 +12,11 @@ When an additional package release is required for the same Rust crate, a fourth
 
 ```py
 def main():
-    r = Replica.new_on_disk("/home/username/.task/", False) # you give the directory of the sqlite database, not the filename
+    r = Replica.new_on_disk("/home/username/.task/", False) 
     tasks = r.all_tasks()
     print(tasks)
-    for key in tasks.keys():
-        task = r.get_task(key)
+    for uuid in tasks.keys():
+        task = r.get_task(uuid)
         print(f"Description: {task.get_description()}")
         print(f"UUID: {task.get_uuid()}")
         print(f"Status: {task.get_status()}")
@@ -25,13 +25,15 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-Let's go over the output here. First of all, the output of r.all_tasks() is a dictionary. The keys are the UUIDs of the tasks. Here is an example based on a couple test tasks:
+For the Replica.new_on_disk(path), the argument is directory to your sqlite database (to match the Rust implementation). For a thorough understanding of the Rust tool, which this Python package emulates, see the Rust documentation at: https://docs.rs/taskchampion/2.0.3/taskchampion/storage/enum.StorageConfig.html#variant.OnDisk
+
+The output of r.all_tasks() is a dictionary. The keys are the UUIDs of the tasks. Here is an example based on a couple test tasks:
 
 ```json
 {'8655d0fe-3627-43b2-933a-7703609b101e': Task { data: TaskData { uuid: 8655d0fe-3627-43b2-933a-7703609b101e, taskmap: {"modified": "1775169728", "description": "test task 2", "entry": "1775169728", "due": "1775188800", "status": "pending"} }, depmap: DependencyMap { edges: [] }, updated_modified: false },
 'f5bc3f9d-d97d-4165-863d-2e08d6b53dc9': Task { data: TaskData { uuid: f5bc3f9d-d97d-4165-863d-2e08d6b53dc9, taskmap: {"status": "pending", "entry": "1775007191", "description": "test1", "modified": "1775007191", "due": "1775016000"} }, depmap: DependencyMap { edges: [] }, updated_modified: false }}
 ```
-One can work directly with the dictionary if one wishes to. But if you get all the keys, you now have all the UUIDs of the tasks. This allows you to directly use the Task methods by requesting tasks from the replica directly. That is what the for loop does. The output of that for loop is:
+Using the keys method on the dictionary allows for accessing the tasks by UUID. Below is the output from the Task API commands:
 
 ```bash
 Description: test task 2
@@ -41,10 +43,7 @@ Description: test1
 UUID: f5bc3f9d-d97d-4165-863d-2e08d6b53dc9
 Status: Status.Pending
 ```
-Do not worry about the strange numbers under entry, modified, and due. When the API is used to fetch the data, it is converted into a user-friendly date/time. For example, on test 1 the task.get_entry() gives you: 2026-04-01 01:33:11+00:00
-
-This is another reason why you should use the UUIDs to work with the tasks rather than interfacing directly with the dictionary. 
-
+Referring back to the dictionary, notice the strange numbers under entry, modified, and due. When the Task API is used to fetch the data, it is converted into a user-friendly date/time. For example, on test 1 the task.get_entry() results in: 2026-04-01 01:33:11+00:00
 
 See the [API
 documentation](https://gothenburgbitfactory.org/taskchampion-py/taskchampion.html)
