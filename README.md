@@ -25,7 +25,7 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-For the Replica.new_on_disk(path), the argument is directory to your sqlite database (to match the Rust implementation). For a thorough understanding of the Rust tool, which this Python package emulates, see the Rust documentation at: https://docs.rs/taskchampion/2.0.3/taskchampion/storage/enum.StorageConfig.html#variant.OnDisk
+For the Replica.new_on_disk(path), the argument is directory to your sqlite database (to match the Rust implementation). For a thorough understanding of the Rust implementation, which this Python package emulates, see the Rust documentation at: https://docs.rs/taskchampion/2.0.3/taskchampion/
 
 The output of r.all_tasks() is a dictionary. The keys are the UUIDs of the tasks. Here is an example based on a couple test tasks:
 
